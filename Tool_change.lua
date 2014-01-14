@@ -258,9 +258,9 @@ LAST_RETRACT = T0_RETRACT
 function RETRACT(distance)
 	if ABSOLUTE_E then
 		local value = last_E_value - distance
-		fout:write("G1 E" , value , " F" , R_SPEED , "\r\n")
+		fout:write("G1 F" , R_SPEED , " E" , value , "\r\n")
 	else
-		fout:write("G1 E-" , distance , " F" , R_SPEED , "\r\n")
+		fout:write("G1 F" , R_SPEED , " E" , distance , "\r\n")
 	end
 end
 
@@ -268,9 +268,9 @@ function UN_RETRACT(distance)
 	if ABSOLUTE_E then
 		local value = last_E_value - distance
 		fout:write("G92 E" , value , "\r\n")
-		fout:write("G1 E" , last_E_value , " F" , R_SPEED , "\r\n")
+		fout:write("G1 F" , R_SPEED , " E" , last_E_value , "\r\n")
 	else
-		fout:write("G1 E" , distance , " F" , R_SPEED , "\r\n")
+		fout:write("G1 F" , R_SPEED , " E" , distance , "\r\n")
 	end
 end
 
@@ -283,6 +283,18 @@ for line in fin:lines() do
 			if E_value then
 				last_E_value = string.match(E_value, "%d+%.%d+")
 			end
+		end
+		
+		-- Record X position
+		local X = string.match(line, "X%d+%.%d+")
+		if X then
+			last_X = string.match(X, "%d+%.%d+")
+		end
+		
+		-- Record Y position
+		local Y = string.match(line, "X%d+%.%d+")
+		if Y then
+			last_Y = string.match(Y, "%d+%.%d+")
 		end
 		
 		-- Kisslicer
@@ -305,7 +317,7 @@ for line in fin:lines() do
 		fout:write(";\r\n")
 		fout:write("; Change tool for support interface.\r\n")
 		RETRACT(LAST_RETRACT)
-		fout:write("G1 X" , LAST_TCL_X , " Y" , LAST_TCL_Y , " F" , T_SPEED , "\r\n")
+		fout:write("G1 F" , T_SPEED , " X" , LAST_TCL_X , " Y" , LAST_TCL_Y , "\r\n")
 		if IDLE_TEMP > 0 then
 			fout:write("M104 S" , IDLE_TEMP , "\r\n")
 		end
@@ -314,6 +326,7 @@ for line in fin:lines() do
 		if INTERFACE_TEMP > 0 then
 			fout:write("M109 S" , INTERFACE_TEMP , "\r\n")
 		end
+		fout:write("G1 F" , T_SPEED , " X" , last_X , " Y" , last_Y , "\r\n")
 		UN_RETRACT(INTERFACE_RETRACT)
 		fout:write("; Set support interface flow rate.\r\n")
 		fout:write("M221 S" .. INTERFACE_FLOW .. "\r\n")
@@ -327,7 +340,7 @@ for line in fin:lines() do
 		fout:write(";\r\n")
 		fout:write("; Change tool for support.\r\n")
 		RETRACT(LAST_RETRACT)
-		fout:write("G1 X" , LAST_TCL_X , " Y" , LAST_TCL_Y , " F" , T_SPEED , "\r\n")
+		fout:write("G1 F" , T_SPEED , " X" , LAST_TCL_X , " Y" , LAST_TCL_Y , "\r\n")
 		if IDLE_TEMP > 0 then
 			fout:write("M104 S" , IDLE_TEMP , "\r\n")
 		end
@@ -336,6 +349,7 @@ for line in fin:lines() do
 		if SUPPORT_TEMP > 0 then
 			fout:write("M109 S" , SUPPORT_TEMP , "\r\n")
 		end
+		fout:write("G1 F" , T_SPEED , " X" , last_X , " Y" , last_Y , "\r\n")
 		UN_RETRACT(SUPPORT_RETRACT)
 		fout:write("; Set support flow rate.\r\n")
 		fout:write("M221 S" .. SUPPORT_FLOW .. "\r\n")
@@ -349,7 +363,7 @@ for line in fin:lines() do
 		fout:write(";\r\n")
 		fout:write("; Change tool for perimeter.\r\n")
 		RETRACT(LAST_RETRACT)
-		fout:write("G1 X" , LAST_TCL_X , " Y" , LAST_TCL_Y , " F" , T_SPEED , "\r\n")
+		fout:write("G1 F" , T_SPEED , " X" , LAST_TCL_X , " Y" , LAST_TCL_Y , "\r\n")
 		if IDLE_TEMP > 0 then
 			fout:write("M104 S" , IDLE_TEMP , "\r\n")
 		end
@@ -358,6 +372,7 @@ for line in fin:lines() do
 		if PERIMETER_TEMP > 0 then
 			fout:write("M109 S" , PERIMETER_TEMP , "\r\n")
 		end
+		fout:write("G1 F" , T_SPEED , " X" , last_X , " Y" , last_Y , "\r\n")
 		UN_RETRACT(PERIMETER_RETRACT)
 		fout:write("; Set perimeter flow rate.\r\n")
 		fout:write("M221 S" .. PERIMETER_FLOW .. "\r\n")
@@ -371,7 +386,7 @@ for line in fin:lines() do
 		fout:write(";\r\n")
 		fout:write("; Change tool for loops.\r\n")
 		RETRACT(LAST_RETRACT)
-		fout:write("G1 X" , LAST_TCL_X , " Y" , LAST_TCL_Y , " F" , T_SPEED , "\r\n")
+		fout:write("G1 F" , T_SPEED , " X" , LAST_TCL_X , " Y" , LAST_TCL_Y , "\r\n")
 		if IDLE_TEMP > 0 then
 			fout:write("M104 S" , IDLE_TEMP , "\r\n")
 		end
@@ -380,6 +395,7 @@ for line in fin:lines() do
 		if LOOP_TEMP > 0 then
 			fout:write("M109 S" , LOOP_TEMP , "\r\n")
 		end
+		fout:write("G1 F" , T_SPEED , " X" , last_X , " Y" , last_Y , "\r\n")
 		UN_RETRACT(LOOP_RETRACT)
 		fout:write("; Set loop flow rate.\r\n")
 		fout:write("M221 S" .. LOOP_FLOW .. "\r\n")
@@ -393,7 +409,7 @@ for line in fin:lines() do
 		fout:write(";\r\n")
 		fout:write("; Change tool for solid infill.\r\n")
 		RETRACT(LAST_RETRACT)
-		fout:write("G1 X" , LAST_TCL_X , " Y" , LAST_TCL_Y , " F" , T_SPEED , "\r\n")
+		fout:write("G1 F" , T_SPEED , " X" , LAST_TCL_X , " Y" , LAST_TCL_Y , "\r\n")
 		if IDLE_TEMP > 0 then
 			fout:write("M104 S" , IDLE_TEMP , "\r\n")
 		end
@@ -402,6 +418,7 @@ for line in fin:lines() do
 		if SOLID_TEMP > 0 then
 			fout:write("M109 S" , SOLID_TEMP , "\r\n")
 		end
+		fout:write("G1 F" , T_SPEED , " X" , last_X , " Y" , last_Y , "\r\n")
 		UN_RETRACT(SOLID_RETRACT)
 		fout:write("; Set solid infill flow rate.\r\n")
 		fout:write("M221 S" .. SOLID_FLOW .. "\r\n")
@@ -415,7 +432,7 @@ for line in fin:lines() do
 		fout:write(";\r\n")
 		fout:write("; Change tool for sparse infill.\r\n")
 		RETRACT(LAST_RETRACT)
-		fout:write("G1 X" , LAST_TCL_X , " Y" , LAST_TCL_Y , " F" , T_SPEED , "\r\n")
+		fout:write("G1 F" , T_SPEED , " X" , LAST_TCL_X , " Y" , LAST_TCL_Y , "\r\n")
 		if IDLE_TEMP > 0 then
 			fout:write("M104 S" , IDLE_TEMP , "\r\n")
 		end
@@ -424,6 +441,7 @@ for line in fin:lines() do
 		if SPARSE_TEMP > 0 then
 			fout:write("M109 S" , SPARSE_TEMP , "\r\n;\r\n")
 		end
+		fout:write("G1 F" , T_SPEED , " X" , last_X , " Y" , last_Y , "\r\n")
 		UN_RETRACT(SPARSE_RETRACT)
 		fout:write("; Set sparse infill flow rate.\r\n")
 		fout:write("M221 S" .. SPARSE_FLOW .. "\r\n")
@@ -439,7 +457,7 @@ for line in fin:lines() do
 		fout:write(";\r\n")
 		fout:write("; Change tool for support.\r\n")
 		RETRACT(LAST_RETRACT)
-		fout:write("G1 X" , LAST_TCL_X , " Y" , LAST_TCL_Y , " F" , T_SPEED , "\r\n")
+		fout:write("G1 F" , T_SPEED , " X" , LAST_TCL_X , " Y" , LAST_TCL_Y , "\r\n")
 		if IDLE_TEMP > 0 then
 			fout:write("M104 S" , IDLE_TEMP , "\r\n")
 		end
@@ -448,6 +466,7 @@ for line in fin:lines() do
 		if SUPPORT_TEMP > 0 then
 			fout:write("M109 S" , SUPPORT_TEMP , "\r\n")
 		end
+		fout:write("G1 F" , T_SPEED , " X" , last_X , " Y" , last_Y , "\r\n")
 		UN_RETRACT(SUPPORT_RETRACT)
 		fout:write("; Set support flow rate.\r\n")
 		fout:write("M221 S" .. SUPPORT_FLOW .. "\r\n")
@@ -461,7 +480,7 @@ for line in fin:lines() do
 		fout:write(";\r\n")
 		fout:write("; Change tool for perimeter.\r\n")
 		RETRACT(LAST_RETRACT)
-		fout:write("G1 X" , LAST_TCL_X , " Y" , LAST_TCL_Y , " F" , T_SPEED , "\r\n")
+		fout:write("G1 F" , T_SPEED , " X" , LAST_TCL_X , " Y" , LAST_TCL_Y , "\r\n")
 		if IDLE_TEMP > 0 then
 			fout:write("M104 S" , IDLE_TEMP , "\r\n")
 		end
@@ -470,6 +489,7 @@ for line in fin:lines() do
 		if PERIMETER_TEMP > 0 then
 			fout:write("M109 S" , PERIMETER_TEMP , "\r\n")
 		end
+		fout:write("G1 F" , T_SPEED , " X" , last_X , " Y" , last_Y , "\r\n")
 		UN_RETRACT(PERIMETER_RETRACT)
 		fout:write("; Set perimeter flow rate.\r\n")
 		fout:write("M221 S" .. PERIMETER_FLOW .. "\r\n")
@@ -483,7 +503,7 @@ for line in fin:lines() do
 		fout:write(";\r\n")
 		fout:write("; Change tool for loops.\r\n")
 		RETRACT(LAST_RETRACT)
-		fout:write("G1 X" , LAST_TCL_X , " Y" , LAST_TCL_Y , " F" , T_SPEED , "\r\n")
+		fout:write("G1 F" , T_SPEED , " X" , LAST_TCL_X , " Y" , LAST_TCL_Y , "\r\n")
 		if IDLE_TEMP > 0 then
 			fout:write("M104 S" , IDLE_TEMP , "\r\n")
 		end
@@ -492,6 +512,7 @@ for line in fin:lines() do
 		if LOOP_TEMP > 0 then
 			fout:write("M109 S" , LOOP_TEMP , "\r\n")
 		end
+		fout:write("G1 F" , T_SPEED , " X" , last_X , " Y" , last_Y , "\r\n")
 		UN_RETRACT(LOOP_RETRACT)
 		fout:write("; Set loop flow rate.\r\n")
 		fout:write("M221 S" .. LOOP_FLOW .. "\r\n")
@@ -501,11 +522,11 @@ for line in fin:lines() do
 		fout:write(";\r\n" .. line .. "\r\n")
 
 	-- Set tool for infill (Cura)
-	elseif infill then
+	elseif infill_c then
 		fout:write(";\r\n")
 		fout:write("; Change tool for infill.\r\n")
 		RETRACT(LAST_RETRACT)
-		fout:write("G1 X" , LAST_TCL_X , " Y" , LAST_TCL_Y , " F" , T_SPEED , "\r\n")
+		fout:write("G1 F" , T_SPEED , " X" , LAST_TCL_X , " Y" , LAST_TCL_Y , "\r\n")
 		if IDLE_TEMP > 0 then
 			fout:write("M104 S" , IDLE_TEMP , "\r\n")
 		end
@@ -514,6 +535,7 @@ for line in fin:lines() do
 		if SPARSE_TEMP > 0 then
 			fout:write("M109 S" , SPARSE_TEMP , "\r\n")
 		end
+		fout:write("G1 F" , T_SPEED , " X" , last_X , " Y" , last_Y , "\r\n")
 		UN_RETRACT(SPARSE_RETRACT)
 		fout:write("; Set sparse infill flow rate.\r\n")
 		fout:write("M221 S" .. SPARSE_FLOW .. "\r\n")
