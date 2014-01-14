@@ -38,6 +38,9 @@ T3_GAIN = 1
 -- Tool change retraction speed
 R_SPEED = 1800 -- In mm/m (1800mm/m = 30mm/s)
 
+-- Code for temperature increase on tool select (Marlin --- M104 = no wait, M109 = wait)
+TEMP_CODE = "M109"
+
 -- Assign which extruder is used for which extrusion type
 -- Extrusion temperatures ( ZERO's will disable and the current temperature will be used)
 
@@ -323,7 +326,7 @@ for line in fin:lines() do
 		fout:write("T" .. INTERFACE_TOOL , "\r\n")
 		fout:write("G92 X" , INTERFACE_X_OFFSET , " Y" , INTERFACE_Y_OFFSET , "\r\n")
 		if INTERFACE_TEMP > 0 then
-			fout:write("M109 S" , INTERFACE_TEMP , "\r\n")
+			fout:write(TEMP_CODE , " S" , INTERFACE_TEMP , "\r\n")
 		end
 		fout:write("G1 F" , T_SPEED , " X" , last_X , " Y" , last_Y , "\r\n")
 		UN_RETRACT(INTERFACE_RETRACT)
@@ -347,7 +350,7 @@ for line in fin:lines() do
 		fout:write("T" .. SUPPORT_TOOL , "\r\n")
 		fout:write("G92 X" , SUPPORT_X_OFFSET , " Y" , SUPPORT_Y_OFFSET , "\r\n")
 		if SUPPORT_TEMP > 0 then
-			fout:write("M109 S" , SUPPORT_TEMP , "\r\n")
+			fout:write(TEMP_CODE , " S" , SUPPORT_TEMP , "\r\n")
 		end
 		fout:write("G1 F" , T_SPEED , " X" , last_X , " Y" , last_Y , "\r\n")
 		UN_RETRACT(SUPPORT_RETRACT)
@@ -371,7 +374,7 @@ for line in fin:lines() do
 		fout:write("T" .. PERIMETER_TOOL , "\r\n")
 		fout:write("G92 X" , PERIMETER_X_OFFSET , " Y" , PERIMETER_Y_OFFSET , "\r\n")
 		if PERIMETER_TEMP > 0 then
-			fout:write("M109 S" , PERIMETER_TEMP , "\r\n")
+			fout:write(TEMP_CODE , " S" , PERIMETER_TEMP , "\r\n")
 		end
 		fout:write("G1 F" , T_SPEED , " X" , last_X , " Y" , last_Y , "\r\n")
 		UN_RETRACT(PERIMETER_RETRACT)
@@ -395,7 +398,7 @@ for line in fin:lines() do
 		fout:write("T" .. LOOP_TOOL , "\r\n")
 		fout:write("G92 X" , LOOP_X_OFFSET , " Y" , LOOP_Y_OFFSET , "\r\n")
 		if LOOP_TEMP > 0 then
-			fout:write("M109 S" , LOOP_TEMP , "\r\n")
+			fout:write(TEMP_CODE , " S" , LOOP_TEMP , "\r\n")
 		end
 		fout:write("G1 F" , T_SPEED , " X" , last_X , " Y" , last_Y , "\r\n")
 		UN_RETRACT(LOOP_RETRACT)
@@ -419,7 +422,7 @@ for line in fin:lines() do
 		fout:write("T" .. SOLID_TOOL , "\r\n")
 		fout:write("G92 X" , SOLID_X_OFFSET , " Y" , SOLID_Y_OFFSET , "\r\n")
 		if SOLID_TEMP > 0 then
-			fout:write("M109 S" , SOLID_TEMP , "\r\n")
+			fout:write(TEMP_CODE , " S" , SOLID_TEMP , "\r\n")
 		end
 		fout:write("G1 F" , T_SPEED , " X" , last_X , " Y" , last_Y , "\r\n")
 		UN_RETRACT(SOLID_RETRACT)
@@ -443,7 +446,7 @@ for line in fin:lines() do
 		fout:write("T" .. SPARSE_TOOL , "\r\n")
 		fout:write("G92 X" , SPARSE_X_OFFSET , " Y" , SPARSE_Y_OFFSET , "\r\n")
 		if SPARSE_TEMP > 0 then
-			fout:write("M109 S" , SPARSE_TEMP , "\r\n;\r\n")
+			fout:write(TEMP_CODE , " S" , SPARSE_TEMP , "\r\n;\r\n")
 		end
 		fout:write("G1 F" , T_SPEED , " X" , last_X , " Y" , last_Y , "\r\n")
 		UN_RETRACT(SPARSE_RETRACT)
@@ -469,7 +472,7 @@ for line in fin:lines() do
 		fout:write("T" .. SUPPORT_TOOL , "\r\n")
 		fout:write("G92 X" , SUPPORT_X_OFFSET , " Y" , SUPPORT_Y_OFFSET , "\r\n")
 		if SUPPORT_TEMP > 0 then
-			fout:write("M109 S" , SUPPORT_TEMP , "\r\n")
+			fout:write(TEMP_CODE , " S" , SUPPORT_TEMP , "\r\n")
 		end
 		fout:write("G1 F" , T_SPEED , " X" , last_X , " Y" , last_Y , "\r\n")
 		UN_RETRACT(SUPPORT_RETRACT)
@@ -493,7 +496,7 @@ for line in fin:lines() do
 		fout:write("T" .. PERIMETER_TOOL , "\r\n")
 		fout:write("G92 X" , PERIMETER_X_OFFSET , " Y" , PERIMETER_Y_OFFSET , "\r\n")
 		if PERIMETER_TEMP > 0 then
-			fout:write("M109 S" , PERIMETER_TEMP , "\r\n")
+			fout:write(TEMP_CODE , " S" , PERIMETER_TEMP , "\r\n")
 		end
 		fout:write("G1 F" , T_SPEED , " X" , last_X , " Y" , last_Y , "\r\n")
 		UN_RETRACT(PERIMETER_RETRACT)
@@ -517,7 +520,7 @@ for line in fin:lines() do
 		fout:write("T" .. LOOP_TOOL , "\r\n")
 		fout:write("G92 X" , LOOP_X_OFFSET , " Y" , LOOP_Y_OFFSET , "\r\n")
 		if LOOP_TEMP > 0 then
-			fout:write("M109 S" , LOOP_TEMP , "\r\n")
+			fout:write(TEMP_CODE , " S" , LOOP_TEMP , "\r\n")
 		end
 		fout:write("G1 F" , T_SPEED , " X" , last_X , " Y" , last_Y , "\r\n")
 		UN_RETRACT(LOOP_RETRACT)
@@ -541,7 +544,7 @@ for line in fin:lines() do
 		fout:write("T" .. SPARSE_TOOL , "\r\n")
 		fout:write("G92 X" , SPARSE_X_OFFSET , " Y" , SPARSE_Y_OFFSET , "\r\n")
 		if SPARSE_TEMP > 0 then
-			fout:write("M109 S" , SPARSE_TEMP , "\r\n")
+			fout:write(TEMP_CODE , " S" , SPARSE_TEMP , "\r\n")
 		end
 		fout:write("G1 F" , T_SPEED , " X" , last_X , " Y" , last_Y , "\r\n")
 		UN_RETRACT(SPARSE_RETRACT)
