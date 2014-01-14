@@ -252,7 +252,6 @@ end
 
 LAST_TCL_X = TCL_X
 LAST_TCL_Y = TCL_Y
-
 LAST_RETRACT = T0_RETRACT
 
 function RETRACT(distance)
@@ -313,7 +312,7 @@ for line in fin:lines() do
 
 	
 	-- Set new tool for support interface (Kisslicer)
-	if inter_k then
+	if inter_k and LAST_TOOL ~= INTERFACE_TOOL then
 		fout:write(";\r\n")
 		fout:write("; Change tool for support interface.\r\n")
 		RETRACT(LAST_RETRACT)
@@ -333,10 +332,11 @@ for line in fin:lines() do
 		LAST_TCL_X = INTERFACE_X_OFFSET
 		LAST_TCL_Y = INTERFACE_Y_OFFSET
 		LAST_RETRACT = INTERFACE_RETRACT
+		LAST_TOOL = INTERFACE_TOOL
 		fout:write(";\r\n" .. line)
 
 	-- Set tool for support (Kisslicer)
-	elseif sup_k then
+	elseif sup_k and LAST_TOOL ~= SUPPORT_TOOL then
 		fout:write(";\r\n")
 		fout:write("; Change tool for support.\r\n")
 		RETRACT(LAST_RETRACT)
@@ -356,10 +356,11 @@ for line in fin:lines() do
 		LAST_TCL_X = SUPPORT_X_OFFSET
 		LAST_TCL_Y = SUPPORT_Y_OFFSET
 		LAST_RETRACT = SUPPORT_RETRACT
+		LAST_TOOL = SUPPORT_TOOL
 		fout:write(";\r\n" .. line)
 
 	-- Set tool for perimeter (Kisslicer)
-	elseif perim_k then
+	elseif perim_k and LAST_TOOL ~= PERIMETER_TOOL then
 		fout:write(";\r\n")
 		fout:write("; Change tool for perimeter.\r\n")
 		RETRACT(LAST_RETRACT)
@@ -379,10 +380,11 @@ for line in fin:lines() do
 		LAST_TCL_X = PERIMETER_X_OFFSET
 		LAST_TCL_Y = PERIMETER_Y_OFFSET
 		LAST_RETRACT = PERIMETER_RETRACT
+		LAST_TOOL = PERIMETER_TOOL
 		fout:write(";\r\n" .. line)
 
 	-- Set tool for loops (Kisslicer)
-	elseif loop_k then
+	elseif loop_k and LAST_TOOL ~= LOOP_TOOL then
 		fout:write(";\r\n")
 		fout:write("; Change tool for loops.\r\n")
 		RETRACT(LAST_RETRACT)
@@ -402,10 +404,11 @@ for line in fin:lines() do
 		LAST_TCL_X = LOOP_X_OFFSET
 		LAST_TCL_Y = LOOP_Y_OFFSET
 		LAST_RETRACT = LOOP_RETRACT
+		LAST_TOOL = LOOP_TOOL
 		fout:write(";\r\n" .. line)
 
 	-- Set tool for solid infill (Kisslicer)
-	elseif solid_k then
+	elseif solid_k and LAST_TOOL ~= SOLID_TOOL then
 		fout:write(";\r\n")
 		fout:write("; Change tool for solid infill.\r\n")
 		RETRACT(LAST_RETRACT)
@@ -425,10 +428,11 @@ for line in fin:lines() do
 		LAST_TCL_X = SOLID_X_OFFSET
 		LAST_TCL_Y = SOLID_Y_OFFSET
 		LAST_RETRACT = SOLID_RETRACT
+		LAST_TOOL = SOLID_TOOL
 		fout:write(";\r\n" .. line)
 
 	-- Set tool for sparse infill (Kisslicer)
-	elseif sparse_k then
+	elseif sparse_k and LAST_TOOL ~= SPARSE_TOOL then
 		fout:write(";\r\n")
 		fout:write("; Change tool for sparse infill.\r\n")
 		RETRACT(LAST_RETRACT)
@@ -448,12 +452,13 @@ for line in fin:lines() do
 		LAST_TCL_X = SPARSE_X_OFFSET
 		LAST_TCL_Y = SPARSE_Y_OFFSET
 		LAST_RETRACT = SPARSE_RETRACT
+		LAST_TOOL = SPARSE_TOOL
 		fout:write(";\r\n" .. line)
 
 
 	-- Cura only
 	-- Set tool for support (Cura)
-	elseif sup_c then
+	elseif sup_c and LAST_TOOL ~= SUPPORT_TOOL then
 		fout:write(";\r\n")
 		fout:write("; Change tool for support.\r\n")
 		RETRACT(LAST_RETRACT)
@@ -473,10 +478,11 @@ for line in fin:lines() do
 		LAST_TCL_X = SUPPORT_X_OFFSET
 		LAST_TCL_Y = SUPPORT_Y_OFFSET
 		LAST_RETRACT = SUPPORT_RETRACT
+		LAST_TOOL = SUPPORT_TOOL
 		fout:write(";\r\n" .. line .. "\r\n")
 
 	-- Set tool for perimeter (Cura)
-	elseif perim_c then
+	elseif perim_c and LAST_TOOL ~= PERIMETER_TOOL then
 		fout:write(";\r\n")
 		fout:write("; Change tool for perimeter.\r\n")
 		RETRACT(LAST_RETRACT)
@@ -496,10 +502,11 @@ for line in fin:lines() do
 		LAST_TCL_X = PERIMETER_X_OFFSET
 		LAST_TCL_Y = PERIMETER_Y_OFFSET
 		LAST_RETRACT = PERIMETER_RETRACT
+		LAST_TOOL = PERIMETER_TOOL
 		fout:write(";\r\n" .. line .. "\r\n")
 
 	-- Set tool for loops (Cura)
-	elseif loop_c then
+	elseif loop_c and LAST_TOOL ~= LOOP_TOOL then
 		fout:write(";\r\n")
 		fout:write("; Change tool for loops.\r\n")
 		RETRACT(LAST_RETRACT)
@@ -519,10 +526,11 @@ for line in fin:lines() do
 		LAST_TCL_X = LOOP_X_OFFSET
 		LAST_TCL_Y = LOOP_Y_OFFSET
 		LAST_RETRACT = LOOP_RETRACT
+		LAST_TOOL = LOOP_TOOL
 		fout:write(";\r\n" .. line .. "\r\n")
 
 	-- Set tool for infill (Cura)
-	elseif infill_c then
+	elseif infill_c and LAST_TOOL ~= SPARSE_TOOL then
 		fout:write(";\r\n")
 		fout:write("; Change tool for infill.\r\n")
 		RETRACT(LAST_RETRACT)
@@ -542,6 +550,7 @@ for line in fin:lines() do
 		LAST_TCL_X = SPARSE_X_OFFSET
 		LAST_TCL_Y = SPARSE_Y_OFFSET
 		LAST_RETRACT = SPARSE_RETRACT
+		LAST_TOOL = SPARSE_TOOL
 		fout:write(";\r\n" .. line .. "\r\n")
 		
 	else
