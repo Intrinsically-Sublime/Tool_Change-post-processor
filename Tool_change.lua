@@ -69,7 +69,7 @@ SPARSE_TEMP = 215
 -- Idle temperature for all extruders ( ZERO will disable and the current temperature will be maintained)
 IDLE_TEMP = 130
 
--- Set offset for each extruder in mm (NO negatives)
+-- Set offset for each extruder in mm (NO negatives)(The hotend closest to X0,Y0 should have its offset set to 0,0)
 T0_X_offset = 0
 T0_Y_offset = 0
 
