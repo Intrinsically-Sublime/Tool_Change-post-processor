@@ -68,9 +68,12 @@ SOLID_TEMP = 215
 SPARSE_TOOL = 3
 SPARSE_TEMP = 215
 
-
 -- Idle temperature for all extruders ( ZERO will disable and the current temperature will be maintained)
 IDLE_TEMP = 130
+
+-- Tool change location ( If idle temp set to zero it will not use the tool change location)
+TCL_X = 50
+TCL_Y = 50
 
 -- Set offset for each extruder in mm (NO negatives)(The hotend closest to X0,Y0 should have its offset set to 0,0)
 T0_X_offset = 0
@@ -85,9 +88,6 @@ T2_Y_offset = 35
 T3_X_offset = 35
 T3_Y_offset = 35
 
--- Tool change location
-TCL_X = 50
-TCL_Y = 50
 
 -- Travel speed
 T_SPEED = 6000 -- In mm/m (6000mm/m = 100mm/s)
@@ -117,138 +117,138 @@ T3_FLOW = math.floor((((SLICE_AREA/T3_AREA)*T3_GAIN)*100)+0.5)
 
 -- Interface tool
 if INTERFACE_TOOL == 0 then
-	INTERFACE_X_OFFSET = (TCL_X + T0_X_offset)
-	INTERFACE_Y_OFFSET = (TCL_Y + T0_Y_offset)
+	INTERFACE_X_OFFSET = T0_X_offset
+	INTERFACE_Y_OFFSET = T0_Y_offset
 	INTERFACE_FLOW = T0_FLOW
 	INTERFACE_RETRACT = T0_RETRACT
 elseif INTERFACE_TOOL == 1 then
-	INTERFACE_X_OFFSET = (TCL_X + T1_X_offset)
-	INTERFACE_Y_OFFSET = (TCL_Y + T1_Y_offset)
+	INTERFACE_X_OFFSET = T1_X_offset
+	INTERFACE_Y_OFFSET = T1_Y_offset
 	INTERFACE_FLOW = T1_FLOW
 	INTERFACE_RETRACT = T1_RETRACT
 elseif INTERFACE_TOOL == 2 then
-	INTERFACE_X_OFFSET = (TCL_X + T2_X_offset)
-	INTERFACE_Y_OFFSET = (TCL_Y + T2_Y_offset)
+	INTERFACE_X_OFFSET = T2_X_offset
+	INTERFACE_Y_OFFSET = T2_Y_offset
 	INTERFACE_FLOW = T2_FLOW
 	INTERFACE_RETRACT = T2_RETRACT
 elseif INTERFACE_TOOL == 3 then
-	INTERFACE_X_OFFSET = (TCL_X + T3_X_offset)
-	INTERFACE_Y_OFFSET = (TCL_Y + T3_Y_offset)
+	INTERFACE_X_OFFSET = T3_X_offset
+	INTERFACE_Y_OFFSET = T3_Y_offset
 	INTERFACE_FLOW = T3_FLOW
 	INTERFACE_RETRACT = T3_RETRACT
 end
 	
 -- Support tool
 if SUPPORT_TOOL == 0 then
-	SUPPORT_X_OFFSET = (TCL_X + T0_X_offset)
-	SUPPORT_Y_OFFSET = (TCL_Y + T0_Y_offset)
+	SUPPORT_X_OFFSET = T0_X_offset
+	SUPPORT_Y_OFFSET = T0_Y_offset
 	SUPPORT_FLOW = T0_FLOW
 	SUPPORT_RETRACT = T0_RETRACT
 elseif SUPPORT_TOOL == 1 then
-	SUPPORT_X_OFFSET = (TCL_X + T1_X_offset)
-	SUPPORT_Y_OFFSET = (TCL_Y + T1_Y_offset)
+	SUPPORT_X_OFFSET = T1_X_offset
+	SUPPORT_Y_OFFSET = T1_Y_offset
 	SUPPORT_FLOW = T1_FLOW
 	SUPPORT_RETRACT = T1_RETRACT
 elseif SUPPORT_TOOL == 2 then
-	SUPPORT_X_OFFSET = (TCL_X + T2_X_offset)
-	SUPPORT_Y_OFFSET = (TCL_Y + T2_Y_offset)
+	SUPPORT_X_OFFSET = T2_X_offset
+	SUPPORT_Y_OFFSET = T2_Y_offset
 	SUPPORT_FLOW = T2_FLOW
 	SUPPORT_RETRACT = T2_RETRACT
 elseif SUPPORT_TOOL == 3 then
-	SUPPORT_X_OFFSET = (TCL_X + T3_X_offset)
-	SUPPORT_Y_OFFSET = (TCL_Y + T3_Y_offset)
+	SUPPORT_X_OFFSET = T3_X_offset
+	SUPPORT_Y_OFFSET = T3_Y_offset
 	SUPPORT_FLOW = T3_FLOW
 	SUPPORT_RETRACT = T3_RETRACT
 end
 	
 -- Perimeter tool
 if PERIMETER_TOOL == 0 then
-	PERIMETER_X_OFFSET = (TCL_X + T0_X_offset)
-	PERIMETER_Y_OFFSET = (TCL_Y + T0_Y_offset)
+	PERIMETER_X_OFFSET = T0_X_offset
+	PERIMETER_Y_OFFSET = T0_Y_offset
 	PERIMETER_FLOW = T0_FLOW
 	PERIMETER_RETRACT = T0_RETRACT
 elseif PERIMETER_TOOL == 1 then
-	PERIMETER_X_OFFSET = (TCL_X + T1_X_offset)
-	PERIMETER_Y_OFFSET = (TCL_Y + T1_Y_offset)
+	PERIMETER_X_OFFSET = T1_X_offset
+	PERIMETER_Y_OFFSET = T1_Y_offset
 	PERIMETER_FLOW = T1_FLOW
 	PERIMETER_RETRACT = T1_RETRACT
 elseif PERIMETER_TOOL == 2 then
-	PERIMETER_X_OFFSET = (TCL_X + T2_X_offset)
-	PERIMETER_Y_OFFSET = (TCL_Y + T2_Y_offset)
+	PERIMETER_X_OFFSET = T2_X_offset
+	PERIMETER_Y_OFFSET = T2_Y_offset
 	PERIMETER_FLOW = T2_FLOW
 	PERIMETER_RETRACT = T2_RETRACT
 elseif PERIMETER_TOOL == 3 then
-	PERIMETER_X_OFFSET = (TCL_X + T3_X_offset)
-	PERIMETER_Y_OFFSET = (TCL_Y + T3_Y_offset)
+	PERIMETER_X_OFFSET = T3_X_offset
+	PERIMETER_Y_OFFSET = T3_Y_offset
 	PERIMETER_FLOW = T3_FLOW
 	PERIMETER_RETRACT = T3_RETRACT
 end
 	
 -- Loop tool
 if LOOP_TOOL == 0 then
-	LOOP_X_OFFSET = (TCL_X + T0_X_offset)
-	LOOP_Y_OFFSET = (TCL_Y + T0_Y_offset)
+	LOOP_X_OFFSET = T0_X_offset
+	LOOP_Y_OFFSET = T0_Y_offset
 	LOOP_FLOW = T0_FLOW
 	LOOP_RETRACT = T0_RETRACT
 elseif LOOP_TOOL == 1 then
-	LOOP_X_OFFSET = (TCL_X + T1_X_offset)
-	LOOP_Y_OFFSET = (TCL_Y + T1_Y_offset)
+	LOOP_X_OFFSET = T1_X_offset
+	LOOP_Y_OFFSET = T1_Y_offset
 	LOOP_FLOW = T1_FLOW
 	LOOP_RETRACT = T1_RETRACT
 elseif LOOP_TOOL == 2 then
-	LOOP_X_OFFSET = (TCL_X + T2_X_offset)
-	LOOP_Y_OFFSET = (TCL_Y + T2_Y_offset)
+	LOOP_X_OFFSET = T2_X_offset
+	LOOP_Y_OFFSET = T2_Y_offset
 	LOOP_FLOW = T2_FLOW
 	LOOP_RETRACT = T2_RETRACT
 elseif LOOP_TOOL == 3 then
-	LOOP_X_OFFSET = (TCL_X + T3_X_offset)
-	LOOP_Y_OFFSET = (TCL_Y + T3_Y_offset)
+	LOOP_X_OFFSET = T3_X_offset
+	LOOP_Y_OFFSET = T3_Y_offset
 	LOOP_FLOW = T3_FLOW
 	LOOP_RETRACT = T3_RETRACT
 end
 
 -- Solid tool
 if SOLID_TOOL == 0 then
-	SOLID_X_OFFSET = (TCL_X + T0_X_offset)
-	SOLID_Y_OFFSET = (TCL_Y + T0_Y_offset)
+	SOLID_X_OFFSET = T0_X_offset
+	SOLID_Y_OFFSET = T0_Y_offset
 	SOLID_FLOW = T0_FLOW
 	SOLID_RETRACT = T0_RETRACT
 elseif SOLID_TOOL == 1 then
-	SOLID_X_OFFSET = (TCL_X + T1_X_offset)
-	SOLID_Y_OFFSET = (TCL_Y + T1_Y_offset)
+	SOLID_X_OFFSET = T1_X_offset
+	SOLID_Y_OFFSET = T1_Y_offset
 	SOLID_FLOW = T1_FLOW
 	SOLID_RETRACT = T1_RETRACT
 elseif SOLID_TOOL == 2 then
-	SOLID_X_OFFSET = (TCL_X + T2_X_offset)
-	SOLID_Y_OFFSET = (TCL_Y + T2_Y_offset)
+	SOLID_X_OFFSET = T2_X_offset
+	SOLID_Y_OFFSET = T2_Y_offset
 	SOLID_FLOW = T2_FLOW
 	SOLID_RETRACT = T2_RETRACT
 elseif SOLID_TOOL == 3 then
-	SOLID_X_OFFSET = (TCL_X + T3_X_offset)
-	SOLID_Y_OFFSET = (TCL_Y + T3_Y_offset)
+	SOLID_X_OFFSET = T3_X_offset
+	SOLID_Y_OFFSET = T3_Y_offset
 	SOLID_FLOW = T3_FLOW
 	SOLID_RETRACT = T3_RETRACT
 end
 	
 -- Sparse tool
 if SPARSE_TOOL == 0 then
-	SPARSE_X_OFFSET = (TCL_X + T0_X_offset)
-	SPARSE_Y_OFFSET = (TCL_Y + T0_Y_offset)
+	SPARSE_X_OFFSET = T0_X_offset
+	SPARSE_Y_OFFSET = T0_Y_offset
 	SPARSE_FLOW = T0_FLOW
 	SPARSE_RETRACT = T0_RETRACT
 elseif SPARSE_TOOL == 1 then
-	SPARSE_X_OFFSET = (TCL_X + T1_X_offset)
-	SPARSE_Y_OFFSET = (TCL_Y + T1_Y_offset)
+	SPARSE_X_OFFSET = T1_X_offset
+	SPARSE_Y_OFFSET = T1_Y_offset
 	SPARSE_FLOW = T1_FLOW
 	SPARSE_RETRACT = T1_RETRACT
 elseif SPARSE_TOOL == 2 then
-	SPARSE_X_OFFSET = (TCL_X + T2_X_offset)
-	SPARSE_Y_OFFSET = (TCL_Y + T2_Y_offset)
+	SPARSE_X_OFFSET = T2_X_offset
+	SPARSE_Y_OFFSET = T2_Y_offset
 	SPARSE_FLOW = T2_FLOW
 	SPARSE_RETRACT = T2_RETRACT
 elseif SPARSE_TOOL == 3 then
-	SPARSE_X_OFFSET = (TCL_X + T3_X_offset)
-	SPARSE_Y_OFFSET = (TCL_Y + T3_Y_offset)
+	SPARSE_X_OFFSET = T3_X_offset
+	SPARSE_Y_OFFSET = T3_Y_offset
 	SPARSE_FLOW = T3_FLOW
 	SPARSE_RETRACT = T3_RETRACT
 end
@@ -275,6 +275,26 @@ function UN_RETRACT(distance)
 		fout:write("G1 F" , R_SPEED , " E" , distance , "\r\n")
 	end
 end
+
+function TCL(position, Xx, Yy)	
+
+	if IDLE_TEMP > 0 and position == 0 then
+		fout:write("G1 F" , T_SPEED , " X" , LAST_TCL_X , " Y" , LAST_TCL_Y , "\r\n")
+	end
+	
+	if IDLE_TEMP > 0 and position == 1 then
+		local new_X = TCL_X + Xx
+		local new_Y = TCL_Y + Yy
+		fout:write("G92 X" , new_X , " Y" , new_Y , "\r\n")
+		LAST_TCL_X = new_X
+		LAST_TCL_Y = new_Y
+	elseif IDLE_TEMP == 0 and position == 1 then
+		local new_X = last_X + Xx
+		local new_Y = last_Y + Yy
+		fout:write("G92 X" , new_X , " Y" , new_Y , "\r\n")
+	end
+end
+
 
 -- read lines
 for line in fin:lines() do
@@ -319,12 +339,12 @@ for line in fin:lines() do
 		fout:write(";\r\n")
 		fout:write("; Change tool for support interface.\r\n")
 		RETRACT(LAST_RETRACT)
-		fout:write("G1 F" , T_SPEED , " X" , LAST_TCL_X , " Y" , LAST_TCL_Y , "\r\n")
+		TCL(0,INTERFACE_X_OFFSET,INTERFACE_Y_OFFSET)
 		if IDLE_TEMP > 0 then
 			fout:write("M104 S" , IDLE_TEMP , "\r\n")
 		end
 		fout:write("T" .. INTERFACE_TOOL , "\r\n")
-		fout:write("G92 X" , INTERFACE_X_OFFSET , " Y" , INTERFACE_Y_OFFSET , "\r\n")
+		TCL(1,INTERFACE_X_OFFSET,INTERFACE_Y_OFFSET)
 		if INTERFACE_TEMP > 0 then
 			fout:write(TEMP_CODE , " S" , INTERFACE_TEMP , "\r\n")
 		end
@@ -332,8 +352,6 @@ for line in fin:lines() do
 		UN_RETRACT(INTERFACE_RETRACT)
 		fout:write("; Set support interface flow rate.\r\n")
 		fout:write("M221 S" .. INTERFACE_FLOW .. "\r\n")
-		LAST_TCL_X = INTERFACE_X_OFFSET
-		LAST_TCL_Y = INTERFACE_Y_OFFSET
 		LAST_RETRACT = INTERFACE_RETRACT
 		LAST_TOOL = INTERFACE_TOOL
 		fout:write(";\r\n" .. line)
@@ -343,12 +361,12 @@ for line in fin:lines() do
 		fout:write(";\r\n")
 		fout:write("; Change tool for support.\r\n")
 		RETRACT(LAST_RETRACT)
-		fout:write("G1 F" , T_SPEED , " X" , LAST_TCL_X , " Y" , LAST_TCL_Y , "\r\n")
+		TCL(0,SUPPORT_X_OFFSET,SUPPORT_Y_OFFSET)
 		if IDLE_TEMP > 0 then
 			fout:write("M104 S" , IDLE_TEMP , "\r\n")
 		end
 		fout:write("T" .. SUPPORT_TOOL , "\r\n")
-		fout:write("G92 X" , SUPPORT_X_OFFSET , " Y" , SUPPORT_Y_OFFSET , "\r\n")
+		TCL(1,SUPPORT_X_OFFSET,SUPPORT_Y_OFFSET)
 		if SUPPORT_TEMP > 0 then
 			fout:write(TEMP_CODE , " S" , SUPPORT_TEMP , "\r\n")
 		end
@@ -356,8 +374,6 @@ for line in fin:lines() do
 		UN_RETRACT(SUPPORT_RETRACT)
 		fout:write("; Set support flow rate.\r\n")
 		fout:write("M221 S" .. SUPPORT_FLOW .. "\r\n")
-		LAST_TCL_X = SUPPORT_X_OFFSET
-		LAST_TCL_Y = SUPPORT_Y_OFFSET
 		LAST_RETRACT = SUPPORT_RETRACT
 		LAST_TOOL = SUPPORT_TOOL
 		fout:write(";\r\n" .. line)
@@ -367,12 +383,12 @@ for line in fin:lines() do
 		fout:write(";\r\n")
 		fout:write("; Change tool for perimeter.\r\n")
 		RETRACT(LAST_RETRACT)
-		fout:write("G1 F" , T_SPEED , " X" , LAST_TCL_X , " Y" , LAST_TCL_Y , "\r\n")
+		TCL(0,PERIMETER_X_OFFSET,PERIMETER_Y_OFFSET)
 		if IDLE_TEMP > 0 then
 			fout:write("M104 S" , IDLE_TEMP , "\r\n")
 		end
 		fout:write("T" .. PERIMETER_TOOL , "\r\n")
-		fout:write("G92 X" , PERIMETER_X_OFFSET , " Y" , PERIMETER_Y_OFFSET , "\r\n")
+		TCL(1,PERIMETER_X_OFFSET,PERIMETER_Y_OFFSET)
 		if PERIMETER_TEMP > 0 then
 			fout:write(TEMP_CODE , " S" , PERIMETER_TEMP , "\r\n")
 		end
@@ -380,8 +396,6 @@ for line in fin:lines() do
 		UN_RETRACT(PERIMETER_RETRACT)
 		fout:write("; Set perimeter flow rate.\r\n")
 		fout:write("M221 S" .. PERIMETER_FLOW .. "\r\n")
-		LAST_TCL_X = PERIMETER_X_OFFSET
-		LAST_TCL_Y = PERIMETER_Y_OFFSET
 		LAST_RETRACT = PERIMETER_RETRACT
 		LAST_TOOL = PERIMETER_TOOL
 		fout:write(";\r\n" .. line)
@@ -391,12 +405,12 @@ for line in fin:lines() do
 		fout:write(";\r\n")
 		fout:write("; Change tool for loops.\r\n")
 		RETRACT(LAST_RETRACT)
-		fout:write("G1 F" , T_SPEED , " X" , LAST_TCL_X , " Y" , LAST_TCL_Y , "\r\n")
+		TCL(0,LOOP_X_OFFSET,LOOP_Y_OFFSET)
 		if IDLE_TEMP > 0 then
 			fout:write("M104 S" , IDLE_TEMP , "\r\n")
 		end
 		fout:write("T" .. LOOP_TOOL , "\r\n")
-		fout:write("G92 X" , LOOP_X_OFFSET , " Y" , LOOP_Y_OFFSET , "\r\n")
+		TCL(1,LOOP_X_OFFSET,LOOP_Y_OFFSET)
 		if LOOP_TEMP > 0 then
 			fout:write(TEMP_CODE , " S" , LOOP_TEMP , "\r\n")
 		end
@@ -415,12 +429,12 @@ for line in fin:lines() do
 		fout:write(";\r\n")
 		fout:write("; Change tool for solid infill.\r\n")
 		RETRACT(LAST_RETRACT)
-		fout:write("G1 F" , T_SPEED , " X" , LAST_TCL_X , " Y" , LAST_TCL_Y , "\r\n")
+		TCL(0,SOLID_X_OFFSET,SOLID_Y_OFFSET)
 		if IDLE_TEMP > 0 then
 			fout:write("M104 S" , IDLE_TEMP , "\r\n")
 		end
 		fout:write("T" .. SOLID_TOOL , "\r\n")
-		fout:write("G92 X" , SOLID_X_OFFSET , " Y" , SOLID_Y_OFFSET , "\r\n")
+		TCL(1,SOLID_X_OFFSET,SOLID_Y_OFFSET)
 		if SOLID_TEMP > 0 then
 			fout:write(TEMP_CODE , " S" , SOLID_TEMP , "\r\n")
 		end
@@ -428,8 +442,6 @@ for line in fin:lines() do
 		UN_RETRACT(SOLID_RETRACT)
 		fout:write("; Set solid infill flow rate.\r\n")
 		fout:write("M221 S" .. SOLID_FLOW .. "\r\n")
-		LAST_TCL_X = SOLID_X_OFFSET
-		LAST_TCL_Y = SOLID_Y_OFFSET
 		LAST_RETRACT = SOLID_RETRACT
 		LAST_TOOL = SOLID_TOOL
 		fout:write(";\r\n" .. line)
@@ -439,12 +451,12 @@ for line in fin:lines() do
 		fout:write(";\r\n")
 		fout:write("; Change tool for sparse infill.\r\n")
 		RETRACT(LAST_RETRACT)
-		fout:write("G1 F" , T_SPEED , " X" , LAST_TCL_X , " Y" , LAST_TCL_Y , "\r\n")
+		TCL(0,SPARSE_X_OFFSET,SPARSE_Y_OFFSET)
 		if IDLE_TEMP > 0 then
 			fout:write("M104 S" , IDLE_TEMP , "\r\n")
 		end
 		fout:write("T" .. SPARSE_TOOL , "\r\n")
-		fout:write("G92 X" , SPARSE_X_OFFSET , " Y" , SPARSE_Y_OFFSET , "\r\n")
+		TCL(1,SPARSE_X_OFFSET,SPARSE_Y_OFFSET)
 		if SPARSE_TEMP > 0 then
 			fout:write(TEMP_CODE , " S" , SPARSE_TEMP , "\r\n;\r\n")
 		end
@@ -452,8 +464,6 @@ for line in fin:lines() do
 		UN_RETRACT(SPARSE_RETRACT)
 		fout:write("; Set sparse infill flow rate.\r\n")
 		fout:write("M221 S" .. SPARSE_FLOW .. "\r\n")
-		LAST_TCL_X = SPARSE_X_OFFSET
-		LAST_TCL_Y = SPARSE_Y_OFFSET
 		LAST_RETRACT = SPARSE_RETRACT
 		LAST_TOOL = SPARSE_TOOL
 		fout:write(";\r\n" .. line)
@@ -465,12 +475,12 @@ for line in fin:lines() do
 		fout:write(";\r\n")
 		fout:write("; Change tool for support.\r\n")
 		RETRACT(LAST_RETRACT)
-		fout:write("G1 F" , T_SPEED , " X" , LAST_TCL_X , " Y" , LAST_TCL_Y , "\r\n")
+		TCL(0,SUPPORT_X_OFFSET,SUPPORT_Y_OFFSET)
 		if IDLE_TEMP > 0 then
 			fout:write("M104 S" , IDLE_TEMP , "\r\n")
 		end
 		fout:write("T" .. SUPPORT_TOOL , "\r\n")
-		fout:write("G92 X" , SUPPORT_X_OFFSET , " Y" , SUPPORT_Y_OFFSET , "\r\n")
+		TCL(1,SUPPORT_X_OFFSET,SUPPORT_Y_OFFSET)
 		if SUPPORT_TEMP > 0 then
 			fout:write(TEMP_CODE , " S" , SUPPORT_TEMP , "\r\n")
 		end
@@ -478,8 +488,6 @@ for line in fin:lines() do
 		UN_RETRACT(SUPPORT_RETRACT)
 		fout:write("; Set support flow rate.\r\n")
 		fout:write("M221 S" .. SUPPORT_FLOW .. "\r\n")
-		LAST_TCL_X = SUPPORT_X_OFFSET
-		LAST_TCL_Y = SUPPORT_Y_OFFSET
 		LAST_RETRACT = SUPPORT_RETRACT
 		LAST_TOOL = SUPPORT_TOOL
 		fout:write(";\r\n" .. line .. "\r\n")
@@ -489,12 +497,12 @@ for line in fin:lines() do
 		fout:write(";\r\n")
 		fout:write("; Change tool for perimeter.\r\n")
 		RETRACT(LAST_RETRACT)
-		fout:write("G1 F" , T_SPEED , " X" , LAST_TCL_X , " Y" , LAST_TCL_Y , "\r\n")
+		TCL(0,PERIMETER_X_OFFSET,PERIMETER_Y_OFFSET)
 		if IDLE_TEMP > 0 then
 			fout:write("M104 S" , IDLE_TEMP , "\r\n")
 		end
 		fout:write("T" .. PERIMETER_TOOL , "\r\n")
-		fout:write("G92 X" , PERIMETER_X_OFFSET , " Y" , PERIMETER_Y_OFFSET , "\r\n")
+		TCL(1,PERIMETER_X_OFFSET,PERIMETER_Y_OFFSET)
 		if PERIMETER_TEMP > 0 then
 			fout:write(TEMP_CODE , " S" , PERIMETER_TEMP , "\r\n")
 		end
@@ -502,8 +510,6 @@ for line in fin:lines() do
 		UN_RETRACT(PERIMETER_RETRACT)
 		fout:write("; Set perimeter flow rate.\r\n")
 		fout:write("M221 S" .. PERIMETER_FLOW .. "\r\n")
-		LAST_TCL_X = PERIMETER_X_OFFSET
-		LAST_TCL_Y = PERIMETER_Y_OFFSET
 		LAST_RETRACT = PERIMETER_RETRACT
 		LAST_TOOL = PERIMETER_TOOL
 		fout:write(";\r\n" .. line .. "\r\n")
@@ -513,12 +519,12 @@ for line in fin:lines() do
 		fout:write(";\r\n")
 		fout:write("; Change tool for loops.\r\n")
 		RETRACT(LAST_RETRACT)
-		fout:write("G1 F" , T_SPEED , " X" , LAST_TCL_X , " Y" , LAST_TCL_Y , "\r\n")
+		TCL(0,LOOP_X_OFFSET,LOOP_Y_OFFSET)
 		if IDLE_TEMP > 0 then
 			fout:write("M104 S" , IDLE_TEMP , "\r\n")
 		end
 		fout:write("T" .. LOOP_TOOL , "\r\n")
-		fout:write("G92 X" , LOOP_X_OFFSET , " Y" , LOOP_Y_OFFSET , "\r\n")
+		TCL(1,LOOP_X_OFFSET,LOOP_Y_OFFSET)
 		if LOOP_TEMP > 0 then
 			fout:write(TEMP_CODE , " S" , LOOP_TEMP , "\r\n")
 		end
@@ -526,8 +532,6 @@ for line in fin:lines() do
 		UN_RETRACT(LOOP_RETRACT)
 		fout:write("; Set loop flow rate.\r\n")
 		fout:write("M221 S" .. LOOP_FLOW .. "\r\n")
-		LAST_TCL_X = LOOP_X_OFFSET
-		LAST_TCL_Y = LOOP_Y_OFFSET
 		LAST_RETRACT = LOOP_RETRACT
 		LAST_TOOL = LOOP_TOOL
 		fout:write(";\r\n" .. line .. "\r\n")
@@ -537,12 +541,12 @@ for line in fin:lines() do
 		fout:write(";\r\n")
 		fout:write("; Change tool for infill.\r\n")
 		RETRACT(LAST_RETRACT)
-		fout:write("G1 F" , T_SPEED , " X" , LAST_TCL_X , " Y" , LAST_TCL_Y , "\r\n")
+		TCL(0,SPARSE_X_OFFSET,SPARSE_Y_OFFSET)
 		if IDLE_TEMP > 0 then
 			fout:write("M104 S" , IDLE_TEMP , "\r\n")
 		end
 		fout:write("T" .. SPARSE_TOOL , "\r\n")
-		fout:write("G92 X" , SPARSE_X_OFFSET , " Y" , SPARSE_Y_OFFSET , "\r\n")
+		TCL(1,SPARSE_X_OFFSET,SPARSE_Y_OFFSET)
 		if SPARSE_TEMP > 0 then
 			fout:write(TEMP_CODE , " S" , SPARSE_TEMP , "\r\n")
 		end
@@ -550,8 +554,6 @@ for line in fin:lines() do
 		UN_RETRACT(SPARSE_RETRACT)
 		fout:write("; Set sparse infill flow rate.\r\n")
 		fout:write("M221 S" .. SPARSE_FLOW .. "\r\n")
-		LAST_TCL_X = SPARSE_X_OFFSET
-		LAST_TCL_Y = SPARSE_Y_OFFSET
 		LAST_RETRACT = SPARSE_RETRACT
 		LAST_TOOL = SPARSE_TOOL
 		fout:write(";\r\n" .. line .. "\r\n")
