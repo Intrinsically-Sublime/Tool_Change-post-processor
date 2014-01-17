@@ -81,7 +81,7 @@ ABSOLUTE_E = true
 -- Extrusion temperatures ( ZERO's will disable and the current temperature will be used)
 
 -- Kisslicer only
-INTERFACE_TOOL = 3
+INTERFACE_TOOL = 3 
 INTERFACE_TEMP = 200
 
 -- Kisslicer (USED FOR ALL CURA SUPPORT)
@@ -111,10 +111,8 @@ IDLE_TEMP = 130
 
 -------------------- Start prime pillar settings --------------------
 
--- ****************** ONLY USE IF THERE IS A TOOL CHANGE ON EVERY LAYER OTHERWISE IT WILL TRY AND START IN MID-AIR****** Working on solution
 -- Prime pillar
-PRIME_PILLAR = false
--- ************************************************
+PRIME_PILLAR = true
 
 -- Prime pillar location
 PPL_X = 10
@@ -345,10 +343,21 @@ else
 	LAST_PPL_Y = 0
 end
 
+
 -- Initiate a few global variables to T0 values
 LAST_RETRACT = T0_RETRACT
+LAST_NOZZLE = T0_NOZZLE_D
+LAST_F_AREA = T0_F_AREA
+LAST_X_OFFSET = T0_X_offset
+LAST_Y_OFFSET = T0_Y_offset
+-- Initiate a few more global variables with 0 values
+LAST_X = 0
+LAST_Y = 0
 Z_COUNT = 0
 LAST_TOOL = 0
+LAYER = 0
+LAST_LAYER = 0
+FORCE_TOWER = true
 
 function RETRACT(distance)
 	if ABSOLUTE_E then
@@ -369,14 +378,37 @@ function UN_RETRACT(distance)
 	end
 end
 
-function TOOL_CHANGE_1()	
+function COOL()
+	if IDLE_TEMP > 0 then
+		fout:write("M104 S" , IDLE_TEMP , "\r\n")
+	end
+end
 
+function HEAT(tool)
+	if INTERFACE_TEMP > 0 then
+		fout:write(TEMP_CODE , " S" , tool , "\r\n")
+	end
+end
+
+function LINE_OUT(line)
+	fout:write(";\r\n" .. line .. "\r\n")
+end
+
+function GO_TO_PPL()	
 	if PRIME_PILLAR then
 		fout:write("G0 F" , T_SPEED , " X" , LAST_PPL_X , " Y" , LAST_PPL_Y , "\r\n")
 	end
 end
 
-function TOOL_CHANGE_2(X, Y, W, R, A) -- X, Y, Width, Retract, Area
+function SELECT_TOOL(tool)
+	fout:write("T" .. tool , "\r\n")
+end
+
+function SET_FLOW(tool)
+	fout:write("M221 S" .. tool .. "\r\n")
+end
+
+function TOOL_CHANGE(X, Y, W, R, A) -- X, Y, Width, Retract, Area
 	
 	if PRIME_PILLAR then
 		local new_X_1 = PPL_X + X
@@ -384,7 +416,7 @@ function TOOL_CHANGE_2(X, Y, W, R, A) -- X, Y, Width, Retract, Area
 		fout:write("G92 X" , new_X_1 , " Y" , new_Y_1 , "\r\n")
 		LAST_PPL_X = new_X_1
 		LAST_PPL_Y = new_Y_1
-		TOOL_CHANGE_1()
+		GO_TO_PPL()
 		PILLAR(W,A,R)
 		fout:write("G0 F" , T_SPEED , " X" , LAST_X , " Y" , LAST_Y , "\r\n")
 	elseif PRIME_PILLAR == false then
@@ -398,11 +430,14 @@ function TOOL_CHANGE_2(X, Y, W, R, A) -- X, Y, Width, Retract, Area
 end
 
 function PILLAR(W,A,R) -- Width, Area, Retract
+
 	if CURRENT_Z == LAST_Z then
 		Z_COUNT = Z_COUNT+1
 	else
 		Z_COUNT = 0
 	end
+	
+	FORCE_TOWER = false
 	
 	P_OFFSET = (W*Z_COUNT)
 	
@@ -449,172 +484,194 @@ function E_LENGTH(W,L,A) -- Width, Length, Area
 	end
 end
 
+function FORCE_PILLAR(line)
+	fout:write(";\r\n; Force prime pillar.\r\n")
+	RETRACT(LAST_RETRACT)
+	GO_TO_PPL()
+	TOOL_CHANGE(LAST_X_OFFSET,LAST_Y_OFFSET,LAST_NOZZLE,LAST_RETRACT,LAST_F_AREA)
+	UN_RETRACT(LAST_RETRACT)
+	LINE_OUT(line)
+end
+
 function INTERFACE(line)
 	fout:write(";\r\n; Change tool for support interface.\r\n")
 	RETRACT(LAST_RETRACT)
-	TOOL_CHANGE_1(INTERFACE_X_OFFSET,INTERFACE_Y_OFFSET)
-	if IDLE_TEMP > 0 then
-		fout:write("M104 S" , IDLE_TEMP , "\r\n")
-	end
-	fout:write("T" .. INTERFACE_TOOL , "\r\n")
-	if INTERFACE_TEMP > 0 then
-		fout:write(TEMP_CODE , " S" , INTERFACE_TEMP , "\r\n")
-	end
-	TOOL_CHANGE_2(INTERFACE_X_OFFSET,INTERFACE_Y_OFFSET,INTERFACE_NOZZLE,INTERFACE_RETRACT,INTERFACE_F_AREA)
+	GO_TO_PPL()
+	COOL()
+	SELECT_TOOL(INTERFACE_TOOL)
+	HEAT(INTERFACE_TEMP)
+	TOOL_CHANGE(INTERFACE_X_OFFSET,INTERFACE_Y_OFFSET,INTERFACE_NOZZLE,INTERFACE_RETRACT,INTERFACE_F_AREA)
 	UN_RETRACT(INTERFACE_RETRACT)
 	fout:write("; Set support interface flow rate.\r\n")
-	fout:write("M221 S" .. INTERFACE_FLOW .. "\r\n")
+	SET_FLOW(INTERFACE_FLOW)
 	LAST_RETRACT = INTERFACE_RETRACT
 	LAST_TOOL = INTERFACE_TOOL
-	fout:write(";\r\n" .. line .. "\r\n")
+	LAST_X_OFFSET = INTERFACE_X_OFFSET
+	LAST_Y_OFFSET = INTERFACE_Y_OFFSET
+	LAST_NOZZLE = INTERFACE_NOZZLE
+	LAST_F_AREA = INTERFACE_F_AREA
+	LINE_OUT(line)
 end
 
 function SUPPORT(line)
 	fout:write(";\r\n; Change tool for support.\r\n")
 	RETRACT(LAST_RETRACT)
-	TOOL_CHANGE_1(SUPPORT_X_OFFSET,SUPPORT_Y_OFFSET)
-	if IDLE_TEMP > 0 then
-		fout:write("M104 S" , IDLE_TEMP , "\r\n")
-	end
-	fout:write("T" .. SUPPORT_TOOL , "\r\n")
-	if SUPPORT_TEMP > 0 then
-		fout:write(TEMP_CODE , " S" , SUPPORT_TEMP , "\r\n")
-	end
-	TOOL_CHANGE_2(SUPPORT_X_OFFSET,SUPPORT_Y_OFFSET,SUPPORT_NOZZLE,SUPPORT_RETRACT,SUPPORT_F_AREA)
+	GO_TO_PPL()
+	COOL()
+	SELECT_TOOL(SUPPORT_TOOL)
+	HEAT(SUPPORT_TEMP)
+	TOOL_CHANGE(SUPPORT_X_OFFSET,SUPPORT_Y_OFFSET,SUPPORT_NOZZLE,SUPPORT_RETRACT,SUPPORT_F_AREA)
 	UN_RETRACT(SUPPORT_RETRACT)
 	fout:write("; Set support flow rate.\r\n")
-	fout:write("M221 S" .. SUPPORT_FLOW .. "\r\n")
+	SET_FLOW(SUPPORT_FLOW)
 	LAST_RETRACT = SUPPORT_RETRACT
 	LAST_TOOL = SUPPORT_TOOL
-	fout:write(";\r\n" .. line .. "\r\n")
+	LAST_X_OFFSET = SUPPORT_X_OFFSET
+	LAST_Y_OFFSET = SUPPORT_Y_OFFSET
+	LAST_NOZZLE = SUPPORT_NOZZLE
+	LAST_F_AREA = SUPPORT_F_AREA
+	LINE_OUT(line)
 end
 
 function PERIMETER(line)
 	fout:write(";\r\n; Change tool for perimeter.\r\n")
 	RETRACT(LAST_RETRACT)
-	TOOL_CHANGE_1(PERIMETER_X_OFFSET,PERIMETER_Y_OFFSET)
-	if IDLE_TEMP > 0 then
-		fout:write("M104 S" , IDLE_TEMP , "\r\n")
-	end
-	fout:write("T" .. PERIMETER_TOOL , "\r\n")
-	if PERIMETER_TEMP > 0 then
-		fout:write(TEMP_CODE , " S" , PERIMETER_TEMP , "\r\n")
-	end
-	TOOL_CHANGE_2(PERIMETER_X_OFFSET,PERIMETER_Y_OFFSET,PERIMETER_NOZZLE,PERIMETER_RETRACT,PERIMETER_F_AREA)
+	GO_TO_PPL()
+	COOL()
+	SELECT_TOOL(PERIMETER_TOOL)
+	HEAT(PERIMETER_TEMP)
+	TOOL_CHANGE(PERIMETER_X_OFFSET,PERIMETER_Y_OFFSET,PERIMETER_NOZZLE,PERIMETER_RETRACT,PERIMETER_F_AREA)
 	UN_RETRACT(PERIMETER_RETRACT)
 	fout:write("; Set perimeter flow rate.\r\n")
-	fout:write("M221 S" .. PERIMETER_FLOW .. "\r\n")
+	SET_FLOW(PERIMETER_FLOW)
 	LAST_RETRACT = PERIMETER_RETRACT
 	LAST_TOOL = PERIMETER_TOOL
-	fout:write(";\r\n" .. line .. "\r\n")
+	LAST_X_OFFSET = PERIMETER_X_OFFSET
+	LAST_Y_OFFSET = PERIMETER_Y_OFFSET
+	LAST_NOZZLE = PERIMETER_NOZZLE
+	LAST_F_AREA = PERIMETER_F_AREA
+	LINE_OUT(line)
 end
 
 function LOOP(line)
 	fout:write(";\r\n; Change tool for loops.\r\n")
 	RETRACT(LAST_RETRACT)
-	TOOL_CHANGE_1(LOOP_X_OFFSET,LOOP_Y_OFFSET)
-	if IDLE_TEMP > 0 then
-		fout:write("M104 S" , IDLE_TEMP , "\r\n")
-	end
-	fout:write("T" .. LOOP_TOOL , "\r\n")
-	if LOOP_TEMP > 0 then
-		fout:write(TEMP_CODE , " S" , LOOP_TEMP , "\r\n")
-	end
-	TOOL_CHANGE_2(LOOP_X_OFFSET,LOOP_Y_OFFSET,LOOP_NOZZLE,LOOP_RETRACT,LOOP_F_AREA)
+	GO_TO_PPL(LOOP_X_OFFSET,LOOP_Y_OFFSET)
+	COOL()
+	SELECT_TOOL(LOOP_TOOL)
+	HEAT(LOOP_TEMP)
+	TOOL_CHANGE(LOOP_X_OFFSET,LOOP_Y_OFFSET,LOOP_NOZZLE,LOOP_RETRACT,LOOP_F_AREA)
 	UN_RETRACT(LOOP_RETRACT)
 	fout:write("; Set loop flow rate.\r\n")
-	fout:write("M221 S" .. LOOP_FLOW .. "\r\n")
+	SET_FLOW(LOOP_FLOW)
 	LAST_RETRACT = LOOP_RETRACT
 	LAST_TOOL = LOOP_TOOL
-	fout:write(";\r\n" .. line .. "\r\n")
+	LAST_X_OFFSET = LOOP_X_OFFSET
+	LAST_Y_OFFSET = LOOP_Y_OFFSET
+	LAST_NOZZLE = LOOP_NOZZLE
+	LAST_F_AREA = LOOP_F_AREA
+	LINE_OUT(line)
 end
 
 function SOLID(line)
 	fout:write(";\r\n; Change tool for solid infill.\r\n")
 	RETRACT(LAST_RETRACT)
-	TOOL_CHANGE_1(SOLID_X_OFFSET,SOLID_Y_OFFSET)
-	if IDLE_TEMP > 0 then
-		fout:write("M104 S" , IDLE_TEMP , "\r\n")
-	end
-	fout:write("T" .. SOLID_TOOL , "\r\n")
-	if SOLID_TEMP > 0 then
-		fout:write(TEMP_CODE , " S" , SOLID_TEMP , "\r\n")
-	end
-	TOOL_CHANGE_2(SOLID_X_OFFSET,SOLID_Y_OFFSET,SOLID_NOZZLE,SOLID_RETRACT,SOLID_F_AREA)
+	GO_TO_PPL()
+	COOL()
+	SELECT_TOOL(SOLID_TOOL)
+	HEAT(SOLID_TEMP)
+	TOOL_CHANGE(SOLID_X_OFFSET,SOLID_Y_OFFSET,SOLID_NOZZLE,SOLID_RETRACT,SOLID_F_AREA)
 	UN_RETRACT(SOLID_RETRACT)
 	fout:write("; Set solid infill flow rate.\r\n")
-	fout:write("M221 S" .. SOLID_FLOW .. "\r\n")
+	SET_FLOW(SOLID_FLOW)
 	LAST_RETRACT = SOLID_RETRACT
 	LAST_TOOL = SOLID_TOOL
-	fout:write(";\r\n" .. line .. "\r\n")
+	LAST_X_OFFSET = SOLID_X_OFFSET
+	LAST_Y_OFFSET = SOLID_Y_OFFSET
+	LAST_NOZZLE = SOLID_NOZZLE
+	LAST_F_AREA = SOLID_F_AREA
+	LINE_OUT(line)
 end
 
 function SPARSE(line)
 	fout:write(";\r\n; Change tool for infill.\r\n")
 	RETRACT(LAST_RETRACT)
-	TOOL_CHANGE_1(SPARSE_X_OFFSET,SPARSE_Y_OFFSET)
-	if IDLE_TEMP > 0 then
-		fout:write("M104 S" , IDLE_TEMP , "\r\n")
-	end
-	fout:write("T" .. SPARSE_TOOL , "\r\n")
-	if SPARSE_TEMP > 0 then
-		fout:write(TEMP_CODE , " S" , SPARSE_TEMP , "\r\n")
-	end
-	TOOL_CHANGE_2(SPARSE_X_OFFSET,SPARSE_Y_OFFSET,SPARSE_NOZZLE,SPARSE_RETRACT,SPARSE_F_AREA)
+	GO_TO_PPL()
+	COOL()
+	SELECT_TOOL(SPARSE_TOOL)
+	HEAT(SPARSE_TEMP)
+	TOOL_CHANGE(SPARSE_X_OFFSET,SPARSE_Y_OFFSET,SPARSE_NOZZLE,SPARSE_RETRACT,SPARSE_F_AREA)
 	UN_RETRACT(LOOP_RETRACT)
 	fout:write("; Set sparse infill flow rate.\r\n")
-	fout:write("M221 S" .. SPARSE_FLOW .. "\r\n")
+	SET_FLOW(SPARSE_FLOW)
 	LAST_RETRACT = SPARSE_RETRACT
 	LAST_TOOL = SPARSE_TOOL
-	fout:write(";\r\n" .. line .. "\r\n")
+	LAST_X_OFFSET = SPARSE_X_OFFSET
+	LAST_Y_OFFSET = SPARSE_Y_OFFSET
+	LAST_NOZZLE = SPARSE_NOZZLE
+	LAST_F_AREA = SPARSE_F_AREA
+	LINE_OUT(line)
 end
 
 -- read lines
 for line in fin:lines() do
-
-		-- Record E value for ABSOLUTE_E
-		if  ABSOLUTE_E then
-			local E_value = string.match(line, "E%d+%.%d+")
-			if E_value then
-				last_E_value = string.match(E_value, "%d+%.%d+")
-			end
-		end
-		
-		-- Record X position
-		local X = string.match(line, "X%d+%.%d+")
-		if X then
-			LAST_X = string.match(X, "%d+%.%d+")
-		end
-		
-		-- Record Y position
-		local Y = string.match(line, "Y%d+%.%d+")
-		if Y then
-			LAST_Y = string.match(Y, "%d+%.%d+")
-		end
-		
-		-- Record Z position
-		local Z = string.match(line, "Z%d+%.%d+")
-		if Z then
-			CURRENT_Z = string.match(Z, "%d+%.%d+")
-		end
-		
-		-- Kisslicer
-		local inter_k = line:match( "; 'Support Interface',") -- Find start of support interface
-		local sup_k = line:match( "; 'Support (may Stack)',") -- Find start of support
-		local perim_k = line:match( "; 'Perimeter',") -- Find start of perimeter
-		local loop_k = line:match( "; 'Loop',") -- Find start of loops
-		local solid_k = line:match( "; 'Solid',") -- Find start of solid infill
-		local sparse_k = line:match( "; 'Stacked Sparse Infill',") -- Find start of sparse infill
 	
-		-- Cura
-		local sup_c = line:match(";TYPE:SUPPORT") -- Find start of support
-		local perim_c = line:match(";TYPE:WALL\--OUTER") -- Find start of perimeter
-		local loop_c = line:match(";TYPE:WALL\--INNER") -- Find start of loops
-		local infill_c = line:match(";TYPE:FILL") -- Find start of sparse infill
+	-- Record X position
+	local X = string.match(line, "X%d+%.%d+")
+	if X then
+		LAST_X = string.match(X, "%d+%.%d+")
+	end
+	
+	-- Record Y position
+	local Y = string.match(line, "Y%d+%.%d+")
+	if Y then
+		LAST_Y = string.match(Y, "%d+%.%d+")
+	end
+	
+	-- Record Z position
+	local Z = string.match(line, "Z%d+%.%d+")
+	if Z then
+		CURRENT_Z = string.match(Z, "%d+%.%d+")
+	end
+	
+	local layer = string.match(line, ";LAYER:") or string.match(line, "; BEGIN_LAYER")
+	if layer then
+		LAYER = LAYER + 1
+	end
+	
+	-- Record E value for ABSOLUTE_E
+	if  ABSOLUTE_E then
+		local E_value = string.match(line, "E%d+%.%d+")
+		if E_value then
+			last_E_value = string.match(E_value, "%d+%.%d+")
+		end
+	end
+	
+	local g92_E0 = line.match(line, "G92 E0")
+	if g92_E0 then
+		last_E_value = 0
+	end
+	
+	-- Kisslicer
+	local inter_k = line:match( "; 'Support Interface',") -- Find start of support interface
+	local sup_k = line:match( "; 'Support (may Stack)',") -- Find start of support
+	local perim_k = line:match( "; 'Perimeter',") -- Find start of perimeter
+	local loop_k = line:match( "; 'Loop',") -- Find start of loops
+	local solid_k = line:match( "; 'Solid',") -- Find start of solid infill
+	local sparse_k = line:match( "; 'Stacked Sparse Infill',") -- Find start of sparse infill
 
+	-- Cura
+	local sup_c = line:match(";TYPE:SUPPORT") -- Find start of support
+	local perim_c = line:match(";TYPE:WALL\--OUTER") -- Find start of perimeter
+	local loop_c = line:match(";TYPE:WALL\--INNER") -- Find start of loops
+	local infill_c = line:match(";TYPE:FILL") -- Find start of sparse infill
+	
+	-- Force prime pillar on layer without tool change.
+	if LAYER ~= LAST_LAYER and FORCE_TOWER and PRIME_PILLAR and LAYER > 1 then
+		FORCE_PILLAR(line)
 	
 	-- Set new tool for support interface (Kisslicer)
-	if inter_k and LAST_TOOL ~= INTERFACE_TOOL then
+	elseif inter_k and LAST_TOOL ~= INTERFACE_TOOL then
 		INTERFACE(line)
 
 	-- Set tool for support (Kisslicer)
@@ -656,10 +713,15 @@ for line in fin:lines() do
 		SPARSE(line)
 		
 	else
-	fout:write( line .. "\n" )
+        fout:write( line .. "\r\n" )
 	
-
-  end
+	end
+	
+	if LAYER ~= LAST_LAYER and FORCE_TOWER == false then
+		FORCE_TOWER = true
+	end
+	
+	LAST_LAYER = LAYER
 end
 
 -- done
