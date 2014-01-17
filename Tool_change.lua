@@ -376,7 +376,7 @@ function TOOL_CHANGE_1()
 	end
 end
 
-function TOOL_CHANGE_2(X, Y, W, R, A)	
+function TOOL_CHANGE_2(X, Y, W, R, A) -- X, Y, Width, Retract, Area
 	
 	if PRIME_PILLAR then
 		local new_X_1 = PPL_X + X
@@ -397,7 +397,7 @@ function TOOL_CHANGE_2(X, Y, W, R, A)
 	end
 end
 
-function PILLAR(W,A,R)
+function PILLAR(W,A,R) -- Width, Area, Retract
 	if CURRENT_Z == LAST_Z then
 		Z_COUNT = Z_COUNT+1
 	else
@@ -436,7 +436,7 @@ function PILLAR(W,A,R)
 	LAST_Z = CURRENT_Z
 end
 
-function E_LENGTH(W,L,A)
+function E_LENGTH(W,L,A) -- Width, Length, Area
 
 	local length = ((W*1.1)*L*LAYER_HEIGHT)/A
 	local rounded_L = math.floor((length*10000)+0.5)*0.0001
@@ -447,6 +447,126 @@ function E_LENGTH(W,L,A)
 	else
 		return rounded_L
 	end
+end
+
+function INTERFACE(line)
+	fout:write(";\r\n; Change tool for support interface.\r\n")
+	RETRACT(LAST_RETRACT)
+	TOOL_CHANGE_1(INTERFACE_X_OFFSET,INTERFACE_Y_OFFSET)
+	if IDLE_TEMP > 0 then
+		fout:write("M104 S" , IDLE_TEMP , "\r\n")
+	end
+	fout:write("T" .. INTERFACE_TOOL , "\r\n")
+	if INTERFACE_TEMP > 0 then
+		fout:write(TEMP_CODE , " S" , INTERFACE_TEMP , "\r\n")
+	end
+	TOOL_CHANGE_2(INTERFACE_X_OFFSET,INTERFACE_Y_OFFSET,INTERFACE_NOZZLE,INTERFACE_RETRACT,INTERFACE_F_AREA)
+	UN_RETRACT(INTERFACE_RETRACT)
+	fout:write("; Set support interface flow rate.\r\n")
+	fout:write("M221 S" .. INTERFACE_FLOW .. "\r\n")
+	LAST_RETRACT = INTERFACE_RETRACT
+	LAST_TOOL = INTERFACE_TOOL
+	fout:write(";\r\n" .. line .. "\r\n")
+end
+
+function SUPPORT(line)
+	fout:write(";\r\n; Change tool for support.\r\n")
+	RETRACT(LAST_RETRACT)
+	TOOL_CHANGE_1(SUPPORT_X_OFFSET,SUPPORT_Y_OFFSET)
+	if IDLE_TEMP > 0 then
+		fout:write("M104 S" , IDLE_TEMP , "\r\n")
+	end
+	fout:write("T" .. SUPPORT_TOOL , "\r\n")
+	if SUPPORT_TEMP > 0 then
+		fout:write(TEMP_CODE , " S" , SUPPORT_TEMP , "\r\n")
+	end
+	TOOL_CHANGE_2(SUPPORT_X_OFFSET,SUPPORT_Y_OFFSET,SUPPORT_NOZZLE,SUPPORT_RETRACT,SUPPORT_F_AREA)
+	UN_RETRACT(SUPPORT_RETRACT)
+	fout:write("; Set support flow rate.\r\n")
+	fout:write("M221 S" .. SUPPORT_FLOW .. "\r\n")
+	LAST_RETRACT = SUPPORT_RETRACT
+	LAST_TOOL = SUPPORT_TOOL
+	fout:write(";\r\n" .. line .. "\r\n")
+end
+
+function PERIMETER(line)
+	fout:write(";\r\n; Change tool for perimeter.\r\n")
+	RETRACT(LAST_RETRACT)
+	TOOL_CHANGE_1(PERIMETER_X_OFFSET,PERIMETER_Y_OFFSET)
+	if IDLE_TEMP > 0 then
+		fout:write("M104 S" , IDLE_TEMP , "\r\n")
+	end
+	fout:write("T" .. PERIMETER_TOOL , "\r\n")
+	if PERIMETER_TEMP > 0 then
+		fout:write(TEMP_CODE , " S" , PERIMETER_TEMP , "\r\n")
+	end
+	TOOL_CHANGE_2(PERIMETER_X_OFFSET,PERIMETER_Y_OFFSET,PERIMETER_NOZZLE,PERIMETER_RETRACT,PERIMETER_F_AREA)
+	UN_RETRACT(PERIMETER_RETRACT)
+	fout:write("; Set perimeter flow rate.\r\n")
+	fout:write("M221 S" .. PERIMETER_FLOW .. "\r\n")
+	LAST_RETRACT = PERIMETER_RETRACT
+	LAST_TOOL = PERIMETER_TOOL
+	fout:write(";\r\n" .. line .. "\r\n")
+end
+
+function LOOP(line)
+	fout:write(";\r\n; Change tool for loops.\r\n")
+	RETRACT(LAST_RETRACT)
+	TOOL_CHANGE_1(LOOP_X_OFFSET,LOOP_Y_OFFSET)
+	if IDLE_TEMP > 0 then
+		fout:write("M104 S" , IDLE_TEMP , "\r\n")
+	end
+	fout:write("T" .. LOOP_TOOL , "\r\n")
+	if LOOP_TEMP > 0 then
+		fout:write(TEMP_CODE , " S" , LOOP_TEMP , "\r\n")
+	end
+	TOOL_CHANGE_2(LOOP_X_OFFSET,LOOP_Y_OFFSET,LOOP_NOZZLE,LOOP_RETRACT,LOOP_F_AREA)
+	UN_RETRACT(LOOP_RETRACT)
+	fout:write("; Set loop flow rate.\r\n")
+	fout:write("M221 S" .. LOOP_FLOW .. "\r\n")
+	LAST_RETRACT = LOOP_RETRACT
+	LAST_TOOL = LOOP_TOOL
+	fout:write(";\r\n" .. line .. "\r\n")
+end
+
+function SOLID(line)
+	fout:write(";\r\n; Change tool for solid infill.\r\n")
+	RETRACT(LAST_RETRACT)
+	TOOL_CHANGE_1(SOLID_X_OFFSET,SOLID_Y_OFFSET)
+	if IDLE_TEMP > 0 then
+		fout:write("M104 S" , IDLE_TEMP , "\r\n")
+	end
+	fout:write("T" .. SOLID_TOOL , "\r\n")
+	if SOLID_TEMP > 0 then
+		fout:write(TEMP_CODE , " S" , SOLID_TEMP , "\r\n")
+	end
+	TOOL_CHANGE_2(SOLID_X_OFFSET,SOLID_Y_OFFSET,SOLID_NOZZLE,SOLID_RETRACT,SOLID_F_AREA)
+	UN_RETRACT(SOLID_RETRACT)
+	fout:write("; Set solid infill flow rate.\r\n")
+	fout:write("M221 S" .. SOLID_FLOW .. "\r\n")
+	LAST_RETRACT = SOLID_RETRACT
+	LAST_TOOL = SOLID_TOOL
+	fout:write(";\r\n" .. line .. "\r\n")
+end
+
+function SPARSE(line)
+	fout:write(";\r\n; Change tool for infill.\r\n")
+	RETRACT(LAST_RETRACT)
+	TOOL_CHANGE_1(SPARSE_X_OFFSET,SPARSE_Y_OFFSET)
+	if IDLE_TEMP > 0 then
+		fout:write("M104 S" , IDLE_TEMP , "\r\n")
+	end
+	fout:write("T" .. SPARSE_TOOL , "\r\n")
+	if SPARSE_TEMP > 0 then
+		fout:write(TEMP_CODE , " S" , SPARSE_TEMP , "\r\n")
+	end
+	TOOL_CHANGE_2(SPARSE_X_OFFSET,SPARSE_Y_OFFSET,SPARSE_NOZZLE,SPARSE_RETRACT,SPARSE_F_AREA)
+	UN_RETRACT(LOOP_RETRACT)
+	fout:write("; Set sparse infill flow rate.\r\n")
+	fout:write("M221 S" .. SPARSE_FLOW .. "\r\n")
+	LAST_RETRACT = SPARSE_RETRACT
+	LAST_TOOL = SPARSE_TOOL
+	fout:write(";\r\n" .. line .. "\r\n")
 end
 
 -- read lines
@@ -495,205 +615,45 @@ for line in fin:lines() do
 	
 	-- Set new tool for support interface (Kisslicer)
 	if inter_k and LAST_TOOL ~= INTERFACE_TOOL then
-		fout:write(";\r\n; Change tool for support interface.\r\n")
-		RETRACT(LAST_RETRACT)
-		TOOL_CHANGE_1(INTERFACE_X_OFFSET,INTERFACE_Y_OFFSET)
-		if IDLE_TEMP > 0 then
-			fout:write("M104 S" , IDLE_TEMP , "\r\n")
-		end
-		fout:write("T" .. INTERFACE_TOOL , "\r\n")
-		if INTERFACE_TEMP > 0 then
-			fout:write(TEMP_CODE , " S" , INTERFACE_TEMP , "\r\n")
-		end
-		TOOL_CHANGE_2(INTERFACE_X_OFFSET,INTERFACE_Y_OFFSET,INTERFACE_NOZZLE,INTERFACE_RETRACT,INTERFACE_F_AREA)
-		UN_RETRACT(INTERFACE_RETRACT)
-		fout:write("; Set support interface flow rate.\r\n")
-		fout:write("M221 S" .. INTERFACE_FLOW .. "\r\n")
-		LAST_RETRACT = INTERFACE_RETRACT
-		LAST_TOOL = INTERFACE_TOOL
-		fout:write(";\r\n" .. line .. "\r\n")
+		INTERFACE(line)
 
 	-- Set tool for support (Kisslicer)
 	elseif sup_k and LAST_TOOL ~= SUPPORT_TOOL then
-		fout:write(";\r\n; Change tool for support.\r\n")
-		RETRACT(LAST_RETRACT)
-		TOOL_CHANGE_1(SUPPORT_X_OFFSET,SUPPORT_Y_OFFSET)
-		if IDLE_TEMP > 0 then
-			fout:write("M104 S" , IDLE_TEMP , "\r\n")
-		end
-		fout:write("T" .. SUPPORT_TOOL , "\r\n")
-		if SUPPORT_TEMP > 0 then
-			fout:write(TEMP_CODE , " S" , SUPPORT_TEMP , "\r\n")
-		end
-		TOOL_CHANGE_2(SUPPORT_X_OFFSET,SUPPORT_Y_OFFSET,SUPPORT_NOZZLE,SUPPORT_RETRACT,SUPPORT_F_AREA)
-		UN_RETRACT(SUPPORT_RETRACT)
-		fout:write("; Set support flow rate.\r\n")
-		fout:write("M221 S" .. SUPPORT_FLOW .. "\r\n")
-		LAST_RETRACT = SUPPORT_RETRACT
-		LAST_TOOL = SUPPORT_TOOL
-		fout:write(";\r\n" .. line .. "\r\n")
+		SUPPORT(line)
 
 	-- Set tool for perimeter (Kisslicer)
 	elseif perim_k and LAST_TOOL ~= PERIMETER_TOOL then
-		fout:write(";\r\n; Change tool for perimeter.\r\n")
-		RETRACT(LAST_RETRACT)
-		TOOL_CHANGE_1(PERIMETER_X_OFFSET,PERIMETER_Y_OFFSET)
-		if IDLE_TEMP > 0 then
-			fout:write("M104 S" , IDLE_TEMP , "\r\n")
-		end
-		fout:write("T" .. PERIMETER_TOOL , "\r\n")
-		if PERIMETER_TEMP > 0 then
-			fout:write(TEMP_CODE , " S" , PERIMETER_TEMP , "\r\n")
-		end
-		TOOL_CHANGE_2(PERIMETER_X_OFFSET,PERIMETER_Y_OFFSET,PERIMETER_NOZZLE,PERIMETER_RETRACT,PERIMETER_F_AREA)
-		UN_RETRACT(PERIMETER_RETRACT)
-		fout:write("; Set perimeter flow rate.\r\n")
-		fout:write("M221 S" .. PERIMETER_FLOW .. "\r\n")
-		LAST_RETRACT = PERIMETER_RETRACT
-		LAST_TOOL = PERIMETER_TOOL
-		fout:write(";\r\n" .. line .. "\r\n")
+		PERIMETER(line)
 
 	-- Set tool for loops (Kisslicer)
 	elseif loop_k and LAST_TOOL ~= LOOP_TOOL then
-		fout:write(";\r\n; Change tool for loops.\r\n")
-		RETRACT(LAST_RETRACT)
-		TOOL_CHANGE_1(LOOP_X_OFFSET,LOOP_Y_OFFSET)
-		if IDLE_TEMP > 0 then
-			fout:write("M104 S" , IDLE_TEMP , "\r\n")
-		end
-		fout:write("T" .. LOOP_TOOL , "\r\n")
-		if LOOP_TEMP > 0 then
-			fout:write(TEMP_CODE , " S" , LOOP_TEMP , "\r\n")
-		end
-		TOOL_CHANGE_2(LOOP_X_OFFSET,LOOP_Y_OFFSET,LOOP_NOZZLE,LOOP_RETRACT,LOOP_F_AREA)
-		UN_RETRACT(LOOP_RETRACT)
-		fout:write("; Set loop flow rate.\r\n")
-		fout:write("M221 S" .. LOOP_FLOW .. "\r\n")
-		LAST_RETRACT = LOOP_RETRACT
-		LAST_TOOL = LOOP_TOOL
-		fout:write(";\r\n" .. line .. "\r\n")
+		LOOP(line)
 
 	-- Set tool for solid infill (Kisslicer)
 	elseif solid_k and LAST_TOOL ~= SOLID_TOOL then
-		fout:write(";\r\n; Change tool for solid infill.\r\n")
-		RETRACT(LAST_RETRACT)
-		TOOL_CHANGE_1(SOLID_X_OFFSET,SOLID_Y_OFFSET)
-		if IDLE_TEMP > 0 then
-			fout:write("M104 S" , IDLE_TEMP , "\r\n")
-		end
-		fout:write("T" .. SOLID_TOOL , "\r\n")
-		if SOLID_TEMP > 0 then
-			fout:write(TEMP_CODE , " S" , SOLID_TEMP , "\r\n")
-		end
-		TOOL_CHANGE_2(SOLID_X_OFFSET,SOLID_Y_OFFSET,SOLID_NOZZLE,SOLID_RETRACT,SOLID_F_AREA)
-		UN_RETRACT(SOLID_RETRACT)
-		fout:write("; Set solid infill flow rate.\r\n")
-		fout:write("M221 S" .. SOLID_FLOW .. "\r\n")
-		LAST_RETRACT = SOLID_RETRACT
-		LAST_TOOL = SOLID_TOOL
-		fout:write(";\r\n" .. line .. "\r\n")
+		SOLID(line)
 
 	-- Set tool for sparse infill (Kisslicer)
 	elseif sparse_k and LAST_TOOL ~= SPARSE_TOOL then
-		fout:write(";\r\n; Change tool for sparse infill.\r\n")
-		RETRACT(LAST_RETRACT)
-		TOOL_CHANGE_1(SPARSE_X_OFFSET,SPARSE_Y_OFFSET)
-		if IDLE_TEMP > 0 then
-			fout:write("M104 S" , IDLE_TEMP , "\r\n")
-		end
-		fout:write("T" .. SPARSE_TOOL , "\r\n")
-		if SPARSE_TEMP > 0 then
-			fout:write(TEMP_CODE , " S" , SPARSE_TEMP , "\r\n;\r\n")
-		end
-		TOOL_CHANGE_2(SPARSE_X_OFFSET,SPARSE_Y_OFFSET,SPARSE_NOZZLE,SPARSE_RETRACT,SPARSE_F_AREA)
-		UN_RETRACT(SPARSE_RETRACT)
-		fout:write("; Set sparse infill flow rate.\r\n")
-		fout:write("M221 S" .. SPARSE_FLOW .. "\r\n")
-		LAST_RETRACT = SPARSE_RETRACT
-		LAST_TOOL = SPARSE_TOOL
-		fout:write(";\r\n" .. line .. "\r\n")
+		SPARSE(line)
 
 
 	-- Cura only
 	-- Set tool for support (Cura)
 	elseif sup_c and LAST_TOOL ~= SUPPORT_TOOL then
-		fout:write(";\r\n; Change tool for support.\r\n")
-		RETRACT(LAST_RETRACT)
-		TOOL_CHANGE_1(SUPPORT_X_OFFSET,SUPPORT_Y_OFFSET)
-		if IDLE_TEMP > 0 then
-			fout:write("M104 S" , IDLE_TEMP , "\r\n")
-		end
-		fout:write("T" .. SUPPORT_TOOL , "\r\n")
-		if SUPPORT_TEMP > 0 then
-			fout:write(TEMP_CODE , " S" , SUPPORT_TEMP , "\r\n")
-		end
-		TOOL_CHANGE_2(SUPPORT_X_OFFSET,SUPPORT_Y_OFFSET,SUPPORT_NOZZLE,SUPPORT_RETRACT,SUPPORT_F_AREA)
-		UN_RETRACT(SUPPORT_RETRACT)
-		fout:write("; Set support flow rate.\r\n")
-		fout:write("M221 S" .. SUPPORT_FLOW .. "\r\n")
-		LAST_RETRACT = SUPPORT_RETRACT
-		LAST_TOOL = SUPPORT_TOOL
-		fout:write(";\r\n" .. line .. "\r\n")
+		SUPPORT(line)
 
 	-- Set tool for perimeter (Cura)
 	elseif perim_c and LAST_TOOL ~= PERIMETER_TOOL then
-		fout:write(";\r\n; Change tool for perimeter.\r\n")
-		RETRACT(LAST_RETRACT)
-		TOOL_CHANGE_1(PERIMETER_X_OFFSET,PERIMETER_Y_OFFSET)
-		if IDLE_TEMP > 0 then
-			fout:write("M104 S" , IDLE_TEMP , "\r\n")
-		end
-		fout:write("T" .. PERIMETER_TOOL , "\r\n")
-		if PERIMETER_TEMP > 0 then
-			fout:write(TEMP_CODE , " S" , PERIMETER_TEMP , "\r\n")
-		end
-		TOOL_CHANGE_2(PERIMETER_X_OFFSET,PERIMETER_Y_OFFSET,PERIMETER_NOZZLE,PERIMETER_RETRACT,PERIMETER_F_AREA)
-		UN_RETRACT(PERIMETER_RETRACT)
-		fout:write("; Set perimeter flow rate.\r\n")
-		fout:write("M221 S" .. PERIMETER_FLOW .. "\r\n")
-		LAST_RETRACT = PERIMETER_RETRACT
-		LAST_TOOL = PERIMETER_TOOL
-		fout:write(";\r\n" .. line .. "\r\n")
+		PERIMETER(line)
 
 	-- Set tool for loops (Cura)
 	elseif loop_c and LAST_TOOL ~= LOOP_TOOL then
-		fout:write(";\r\n; Change tool for loops.\r\n")
-		RETRACT(LAST_RETRACT)
-		TOOL_CHANGE_1(LOOP_X_OFFSET,LOOP_Y_OFFSET)
-		if IDLE_TEMP > 0 then
-			fout:write("M104 S" , IDLE_TEMP , "\r\n")
-		end
-		fout:write("T" .. LOOP_TOOL , "\r\n")
-		if LOOP_TEMP > 0 then
-			fout:write(TEMP_CODE , " S" , LOOP_TEMP , "\r\n")
-		end
-		TOOL_CHANGE_2(LOOP_X_OFFSET,LOOP_Y_OFFSET,LOOP_NOZZLE,LOOP_RETRACT,LOOP_F_AREA)
-		UN_RETRACT(LOOP_RETRACT)
-		fout:write("; Set loop flow rate.\r\n")
-		fout:write("M221 S" .. LOOP_FLOW .. "\r\n")
-		LAST_RETRACT = LOOP_RETRACT
-		LAST_TOOL = LOOP_TOOL
-		fout:write(";\r\n" .. line .. "\r\n")
+		LOOP(line)
 
 	-- Set tool for infill (Cura)
 	elseif infill_c and LAST_TOOL ~= SPARSE_TOOL then
-		fout:write(";\r\n; Change tool for infill.\r\n")
-		RETRACT(LAST_RETRACT)
-		TOOL_CHANGE_1(SPARSE_X_OFFSET,SPARSE_Y_OFFSET)
-		if IDLE_TEMP > 0 then
-			fout:write("M104 S" , IDLE_TEMP , "\r\n")
-		end
-		fout:write("T" .. SPARSE_TOOL , "\r\n")
-		if SPARSE_TEMP > 0 then
-			fout:write(TEMP_CODE , " S" , SPARSE_TEMP , "\r\n")
-		end
-		TOOL_CHANGE_2(SPARSE_X_OFFSET,SPARSE_Y_OFFSET,SPARSE_NOZZLE,SPARSE_RETRACT,SPARSE_F_AREA)
-		UN_RETRACT(LOOP_RETRACT)
-		fout:write("; Set sparse infill flow rate.\r\n")
-		fout:write("M221 S" .. SPARSE_FLOW .. "\r\n")
-		LAST_RETRACT = SPARSE_RETRACT
-		LAST_TOOL = SPARSE_TOOL
-		fout:write(";\r\n" .. line .. "\r\n")
+		SPARSE(line)
 		
 	else
 	fout:write( line .. "\n" )
