@@ -20,6 +20,9 @@
 SLICE_DIAMETER = 3
 LAYER_HEIGHT = 0.2
 
+-- If using Cura then set to true. If using Kisslicer then set to false
+CURA = false
+
 --------------------- End slicer settings ---------------------
 
 --------------------- Start machine setup ---------------------
@@ -459,8 +462,11 @@ for line in fin:lines() do
 		INSERT_BLOCK(line,SPARSE_TOOL,"infill")
 	
 	else
-        fout:write( line .. "\r\n" )
-	
+		if CURA then
+		        fout:write( line .. "\r\n" )
+		else
+		        fout:write( line)
+		end
 	end
 	
 	if LAYER ~= LAST_LAYER and FORCE_TOWER == false then
