@@ -23,6 +23,9 @@ LAYER_HEIGHT = 0.2
 -- If using Cura then set to true. If using Kisslicer then set to false
 CURA = false
 
+-- Extrusion mode (Absolute E because Cura does not support Relative or use ABS_2_REL post processor first https://github.com/Intrinsically-Sublime/ABS_2_REL )
+ABSOLUTE_E = true
+
 --------------------- End slicer settings ---------------------
 
 --------------------- Start machine setup ---------------------
@@ -76,9 +79,6 @@ R_SPEED = 1800 -- In mm/m (1800mm/m = 30mm/s)
 
 -- Travel speed
 T_SPEED = 6000 -- In mm/m (6000mm/m = 100mm/s)
-
--- Extrusion mode (Absolute E because Cura does not support Relative or use ABS_2_REL post processor first https://github.com/Intrinsically-Sublime/ABS_2_REL )
-ABSOLUTE_E = true
 
 -- Assign which extruder is used for which extrusion type
 -- Extrusion temperatures ( ZERO's will disable and the current temperature will be used)
@@ -211,7 +211,6 @@ else
 	LAST_PPL_X = 0
 	LAST_PPL_Y = 0
 end
-
 
 -- Initiate a few global variables to T0 values
 LAST_RETRACT = T0_RETRACT
