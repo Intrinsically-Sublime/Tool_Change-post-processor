@@ -20,9 +20,6 @@
 SLICE_DIAMETER = 3
 LAYER_HEIGHT = 0.2
 
--- If using Cura then set to true. If using Kisslicer then set to false
-CURA = false
-
 -- Extrusion mode (Absolute E because Cura does not support Relative or use ABS_2_REL post processor first https://github.com/Intrinsically-Sublime/ABS_2_REL )
 ABSOLUTE_E = true
 
@@ -315,27 +312,49 @@ function PILLAR(W,A,R) -- Width, Area, Retract
 	
 	P_OFFSET = (W*Z_COUNT)
 	
+	local Get_PPP_X = {
+	[0] = P_SIZE_X-P_OFFSET,
+	[1] = (P_SIZE_X*0.125)-P_OFFSET,
+	[2] = (P_SIZE_X*0.250)-P_OFFSET,
+	[3] = (P_SIZE_X*0.375)-P_OFFSET,
+	[4] = (P_SIZE_X*0.500)-P_OFFSET,
+	[5] = (P_SIZE_X*0.625)-P_OFFSET,
+	[6] = (P_SIZE_X*0.750)-P_OFFSET,
+	[7] = (P_SIZE_X*0.875)-P_OFFSET
+	}
+	
+	local Get_PPP_Y = {
+	[0] = P_SIZE_Y-P_OFFSET,
+	[1] = (P_SIZE_Y*0.125)-P_OFFSET,
+	[2] = (P_SIZE_Y*0.250)-P_OFFSET,
+	[3] = (P_SIZE_Y*0.375)-P_OFFSET,
+	[4] = (P_SIZE_Y*0.500)-P_OFFSET,
+	[5] = (P_SIZE_Y*0.625)-P_OFFSET,
+	[6] = (P_SIZE_Y*0.750)-P_OFFSET,
+	[7] = (P_SIZE_Y*0.875)-P_OFFSET
+	}
+	
 	fout:write(";\r\n;Prime pillar \r\n")
 	UN_RETRACT(R)
 	ABS_E = LAST_E
-	fout:write("G0 F" , T_SPEED , " X" , PPL_X - P_OFFSET , " Y" , PPL_Y - P_OFFSET , "\r\n")
-	fout:write("G1 F" , P_SPEED , " X" , (PPL_X + (P_SIZE_X*0.125 - P_OFFSET)) , " E" , E_LENGTH(W, P_SIZE_X*0.250 - P_OFFSET,A) ,"\r\n")
-	fout:write("G1 F" , P_SPEED , " Y" , (PPL_Y + (P_SIZE_Y*0.125 - P_OFFSET)) , " E" , E_LENGTH(W, P_SIZE_Y*0.250 - P_OFFSET,A) ,"\r\n")
-	fout:write("G1 F" , P_SPEED , " X" , (PPL_X - (P_SIZE_X*0.125 - P_OFFSET)) , " E" , E_LENGTH(W, P_SIZE_X*0.250 - P_OFFSET,A) ,"\r\n")
-	fout:write("G1 F" , P_SPEED , " Y" , (PPL_Y - (P_SIZE_Y*0.125 - P_OFFSET)) , " E" , E_LENGTH(W, P_SIZE_Y*0.250 - P_OFFSET,A) ,"\r\n")
-	fout:write("G1 F" , P_SPEED , " X" , (PPL_X + (P_SIZE_X*0.250 - P_OFFSET)) , " E" , E_LENGTH(W, P_SIZE_X*0.375 - P_OFFSET,A) ,"\r\n")
-	fout:write("G1 F" , P_SPEED , " Y" , (PPL_Y + (P_SIZE_Y*0.250 - P_OFFSET)) , " E" , E_LENGTH(W, P_SIZE_Y*0.375 - P_OFFSET,A) ,"\r\n")
-	fout:write("G1 F" , P_SPEED , " X" , (PPL_X - (P_SIZE_X*0.250 - P_OFFSET)) , " E" , E_LENGTH(W, P_SIZE_X*0.500 - P_OFFSET,A) ,"\r\n")
-	fout:write("G1 F" , P_SPEED , " Y" , (PPL_Y - (P_SIZE_Y*0.250 - P_OFFSET)) , " E" , E_LENGTH(W, P_SIZE_Y*0.500 - P_OFFSET,A) ,"\r\n")
-	fout:write("G1 F" , P_SPEED , " X" , (PPL_X + (P_SIZE_X*0.375 - P_OFFSET)) , " E" , E_LENGTH(W, P_SIZE_X*0.625 - P_OFFSET,A) ,"\r\n")
-	fout:write("G1 F" , P_SPEED , " Y" , (PPL_Y + (P_SIZE_Y*0.375 - P_OFFSET)) , " E" , E_LENGTH(W, P_SIZE_Y*0.625 - P_OFFSET,A) ,"\r\n")
-	fout:write("G1 F" , P_SPEED , " X" , (PPL_X - (P_SIZE_X*0.375 - P_OFFSET)) , " E" , E_LENGTH(W, P_SIZE_X*0.750 - P_OFFSET,A) ,"\r\n")
-	fout:write("G1 F" , P_SPEED , " Y" , (PPL_Y - (P_SIZE_Y*0.375 - P_OFFSET)) , " E" , E_LENGTH(W, P_SIZE_Y*0.750 - P_OFFSET,A) ,"\r\n")
-	fout:write("G1 F" , P_SPEED , " X" , (PPL_X + (P_SIZE_X*0.500 - P_OFFSET)) , " E" , E_LENGTH(W, P_SIZE_X*0.875 - P_OFFSET,A) ,"\r\n")
-	fout:write("G1 F" , P_SPEED , " Y" , (PPL_Y + (P_SIZE_Y*0.500 - P_OFFSET)) , " E" , E_LENGTH(W, P_SIZE_Y*0.875 - P_OFFSET,A) ,"\r\n")
-	fout:write("G1 F" , P_SPEED , " X" , (PPL_X - (P_SIZE_X*0.500 - P_OFFSET)) , " E" , E_LENGTH(W, P_SIZE_X - P_OFFSET,A) ,"\r\n")
-	fout:write("G1 F" , P_SPEED , " Y" , (PPL_Y - (P_SIZE_Y*0.500 - P_OFFSET)) , " E" , E_LENGTH(W, P_SIZE_Y - P_OFFSET,A) ,"\r\n")
-	fout:write("G1 F" , P_SPEED , " X" , (PPL_X + (P_SIZE_X*0.500 - P_OFFSET)) , " E" , E_LENGTH(W, P_SIZE_X - P_OFFSET,A) ,"\r\n")
+	fout:write("G0 F" , T_SPEED , " X" , PPL_X , " Y" , PPL_Y , "\r\n")
+	fout:write("G1 F" , P_SPEED , " X" , (PPL_X+Get_PPP_X[1]) , " E" , E_LENGTH(W,Get_PPP_X[2],A) ,"\r\n")
+	fout:write("G1 F" , P_SPEED , " Y" , (PPL_Y+Get_PPP_Y[1]) , " E" , E_LENGTH(W,Get_PPP_Y[2],A) ,"\r\n")
+	fout:write("G1 F" , P_SPEED , " X" , (PPL_X-Get_PPP_X[1]) , " E" , E_LENGTH(W,Get_PPP_X[2],A) ,"\r\n")
+	fout:write("G1 F" , P_SPEED , " Y" , (PPL_Y-Get_PPP_Y[1]) , " E" , E_LENGTH(W,Get_PPP_Y[2],A) ,"\r\n")
+	fout:write("G1 F" , P_SPEED , " X" , (PPL_X+Get_PPP_X[2]) , " E" , E_LENGTH(W,Get_PPP_X[3],A) ,"\r\n")
+	fout:write("G1 F" , P_SPEED , " Y" , (PPL_Y+Get_PPP_Y[2]) , " E" , E_LENGTH(W,Get_PPP_Y[3],A) ,"\r\n")
+	fout:write("G1 F" , P_SPEED , " X" , (PPL_X-Get_PPP_X[2]) , " E" , E_LENGTH(W,Get_PPP_X[4],A) ,"\r\n")
+	fout:write("G1 F" , P_SPEED , " Y" , (PPL_Y-Get_PPP_Y[2]) , " E" , E_LENGTH(W,Get_PPP_Y[4],A) ,"\r\n")
+	fout:write("G1 F" , P_SPEED , " X" , (PPL_X+Get_PPP_X[3]) , " E" , E_LENGTH(W,Get_PPP_X[5],A) ,"\r\n")
+	fout:write("G1 F" , P_SPEED , " Y" , (PPL_Y+Get_PPP_Y[3]) , " E" , E_LENGTH(W,Get_PPP_Y[5],A) ,"\r\n")
+	fout:write("G1 F" , P_SPEED , " X" , (PPL_X-Get_PPP_X[3]) , " E" , E_LENGTH(W,Get_PPP_X[6],A) ,"\r\n")
+	fout:write("G1 F" , P_SPEED , " Y" , (PPL_Y-Get_PPP_Y[3]) , " E" , E_LENGTH(W,Get_PPP_Y[6],A) ,"\r\n")
+	fout:write("G1 F" , P_SPEED , " X" , (PPL_X+Get_PPP_X[4]) , " E" , E_LENGTH(W,Get_PPP_X[7],A) ,"\r\n")
+	fout:write("G1 F" , P_SPEED , " Y" , (PPL_Y+Get_PPP_Y[4]) , " E" , E_LENGTH(W,Get_PPP_Y[7],A) ,"\r\n")
+	fout:write("G1 F" , P_SPEED , " X" , (PPL_X-Get_PPP_X[4]) , " E" , E_LENGTH(W,Get_PPP_X[0],A) ,"\r\n")
+	fout:write("G1 F" , P_SPEED , " Y" , (PPL_Y-Get_PPP_Y[4]) , " E" , E_LENGTH(W,Get_PPP_Y[0],A) ,"\r\n")
+	fout:write("G1 F" , P_SPEED , " X" , (PPL_X+Get_PPP_X[4]) , " E" , E_LENGTH(W,Get_PPP_X[0],A) ,"\r\n")
 	if ABSOLUTE_E then
 		fout:write("G92 E" , LAST_E , "\r\n")
 	end
@@ -461,11 +480,7 @@ for line in fin:lines() do
 		INSERT_BLOCK(line,SPARSE_TOOL,"infill")
 	
 	else
-		if CURA then
-		        fout:write( line .. "\r\n" )
-		else
-		        fout:write( line)
-		end
+	        fout:write(line .. "\n" )
 	end
 	
 	if LAYER ~= LAST_LAYER and FORCE_TOWER == false then
