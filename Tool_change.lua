@@ -349,7 +349,6 @@ function draw_R_Skirt()
 
 	fout:write(";\r\n;Pillar raft skirt \r\n")
 	ABS_E = current_E
-	set_Flow(RAFT_GAIN)
 	local overlap = EXTRUSION_WIDTH*0.5
 	local x_min = R_Min_X-overlap
 	local x_max = R_Max_X+overlap
@@ -360,7 +359,6 @@ function draw_R_Skirt()
 	draw_Line(x_max,y_max)
 	draw_Line(x_max,y_min)
 	draw_Line(x_min,y_min)
-	set_Flow(100)
 	if ABSOLUTE_E == true then
 		fout:write("G92 E" , current_E , "\r\n")
 	end
