@@ -111,8 +111,8 @@ IDLE_TEMP = 130
 PRIME_PILLAR = true
 
 -- Prime pillar location
-PPL_X = 10
-PPL_Y = 10
+PPL_X = 16
+PPL_Y = 16
 
 -- Prime pillar size (Will be centred at the prime pillar location)(Minimum size is 4mm per extruder being used)
 P_SIZE_X = 16
@@ -232,7 +232,7 @@ ABS_E = 0
 first_pillar = RAFT_THICKNESS
 
 function retract()
-	if ABSOLUTE_E then
+	if ABSOLUTE_E == true then
 		local E = current_E - tool_Retract
 		fout:write("G1 F" , R_SPEED , " E" , E , "\r\n")
 	else
@@ -241,7 +241,7 @@ function retract()
 end
 
 function un_Retract()
-	if ABSOLUTE_E then
+	if ABSOLUTE_E == true then
 		local E = current_E - tool_Retract
 		fout:write("G92 E" , E , "\r\n")
 		fout:write("G1 F" , R_SPEED , " E" , current_E , "\r\n")
@@ -361,7 +361,7 @@ function draw_R_Skirt()
 	draw_Line(x_max,y_min)
 	draw_Line(x_min,y_min)
 	set_Flow(100)
-	if ABSOLUTE_E then
+	if ABSOLUTE_E == true then
 		fout:write("G92 E" , current_E , "\r\n")
 	end
 end
@@ -389,7 +389,7 @@ function draw_Raft()
 		end
 	end
 	
-	if ABSOLUTE_E then
+	if ABSOLUTE_E == true then
 		fout:write("G92 E" , current_E , "\r\n")
 	end
 	set_Flow(100)
@@ -485,7 +485,7 @@ function draw_Pillar()
 		draw_Line(PPL_X-Get_PPP_X[4],PPL_Y-Get_PPP_Y[4])
 		draw_Line(PPL_X+Get_PPP_X[4],PPL_Y-Get_PPP_Y[4])
 		draw_Line(PPL_X+Get_PPP_X[4],PPL_Y-Get_PPP_Y[3]-P_Offset)
-		if ABSOLUTE_E then
+		if ABSOLUTE_E == true then
 			fout:write("G92 E" , current_E , "\r\n")
 		end
 		retract()
@@ -496,10 +496,10 @@ end
 
 function E_Length(L) -- Length
 
-	local length = ((EXTRUSION_WIDTH*1.1)*L*LAYER_HEIGHT)/tool_Area
+	local length = (EXTRUSION_WIDTH*L*LAYER_HEIGHT)/tool_Area
 	local rounded_L = math.floor((length*10000)+0.5)*0.0001
 	
-	if ABSOLUTE_E then
+	if ABSOLUTE_E == true then
 		ABS_E = ABS_E + rounded_L
 		return ABS_E
 	else
@@ -661,4 +661,3 @@ end
 fin:close()
 fout:close()
 print "done"
-
