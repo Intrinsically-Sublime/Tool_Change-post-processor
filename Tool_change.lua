@@ -17,12 +17,14 @@
 
 -- Filament diameter set in the slicer
 -- Layer height used to slice
--- First layer Z value (Z-offset set in slicer will effect this)
+-- First layer Z value (Z-offset set in the slicer will effect this)
 -- Extrusion width set in the slicer (will be used for the prime pillar)
+-- Retraction distance set in the slicer
 SLICE_DIAMETER = 3
-LAYER_HEIGHT = 0.1
-FIRST_L_HEIGHT = 0.1
+LAYER_HEIGHT = 0.2
+FIRST_L_HEIGHT = 0.2
 EXTRUSION_WIDTH = 0.52
+RETRACT_DISTANCE = 5.5 -- IMPORTANT -- must match the setting used in the slicer and the slicer must have at least one digit after the decimal even if it is a zero
 
 --------------------- End slicer settings ---------------------
 
@@ -32,19 +34,19 @@ EXTRUSION_WIDTH = 0.52
 -- Retraction distance for each extruder
 -- Extruder gain to compensate for mechanical differences
 T0_DIAMETER = 3
-T0_RETRACT = 1
+T0_RETRACT = 2
 T0_GAIN = 1
 
 T1_DIAMETER = 3
-T1_RETRACT = 1
+T1_RETRACT = 3
 T1_GAIN = 1
 
 T2_DIAMETER = 3
-T2_RETRACT = 1
+T2_RETRACT = 4
 T2_GAIN = 1
 
 T3_DIAMETER = 3
-T3_RETRACT = 1
+T3_RETRACT = 5
 T3_GAIN = 1
 
 -- Set offset for each extruder in mm (NO negatives)(The hotend closest to X0,Y0 should have its offset set to 0,0 and preferably be T0)
@@ -103,6 +105,12 @@ SPARSE_TEMP = 215
 -- Idle temperature for all extruders ( ZERO will disable and the current temperature will be maintained)
 IDLE_TEMP = 130
 
+-- Remove all comments ( Slicer generated and debug comments )
+REMOVE_COMMENTS = false
+
+-- Adds further comments to the gcode output (overridden by remove comments)
+debug = true
+
 ------------------------ End gcode settings ------------------------
 
 -------------------- Start prime pillar settings --------------------
@@ -138,11 +146,12 @@ RAFT_THICKNESS = 3
 
 ---------------------- End prime pillar settings ----------------------
 
-
 -----------------------------------------------------------------------------
 -->>>>>>>>>>>>>>>>>>>>>>>>>>> END USER SETTINGS <<<<<<<<<<<<<<<<<<<<<<<<<<<--
 -----------------------------------------------------------------------------
 
+if REMOVE_COMMENTS == true then debug = false end
+ 
 -- open files
 collectgarbage()  -- ensure unused files are closed
 local fin = assert( io.open( arg[1] ) ) -- reading
@@ -160,7 +169,7 @@ T1_Flow = math.floor((((slice_Area/T1_F_area)*T1_GAIN)*100)+0.5)
 T2_Flow = math.floor((((slice_Area/T2_F_area)*T2_GAIN)*100)+0.5)
 T3_Flow = math.floor((((slice_Area/T3_F_area)*T3_GAIN)*100)+0.5)
 
--- Create arrays to sort tool variables to section types (Lua normally index's from 1 so we have to force a 0 index)
+-- Create arrays to sort tool variables to section types (Lua normally index's from 1 so we have to force a 0 index so it matches the extruder numbering)
 Get_Temp = {
 ["interface"] = INTERFACE_TEMP,
 ["support"] = SUPPORT_TEMP,
@@ -219,6 +228,7 @@ tool_Y_offset = Get_Y_Offset[0]
 tool_Retract = Get_Retract[0]
 tool_Area = Get_F_Area[0]
 tool_Flow = Get_Flow[0]
+current_Tool = 0
 -- Initiate a few more global variables with 0 values
 last_X = 0
 last_Y = 0
@@ -229,24 +239,44 @@ last_Layer = 0
 force_Tower = true
 last_Raft = false
 ABS_E = 0
-first_pillar = RAFT_THICKNESS
+current_E = 0
+last_E = 0
+skip_Line = false
+retracted = false
+slicer_Retracted = false
 
 function retract()
-	if ABSOLUTE_E == true then
-		local E = current_E - tool_Retract
-		fout:write("G1 F" , R_SPEED , " E" , E , "\r\n")
-	else
-		fout:write("G1 F" , R_SPEED , " E-" , tool_Retract , "\r\n")
+	if retracted == false then -- Prevents double retractions
+		if ABSOLUTE_E == true then
+			local E1 = current_E + tool_Retract
+			if debug == true then fout:write("; RETRACT TOOL " .. current_Tool .. " , " .. tool_Retract .. "mm's \r\n") end
+			fout:write("G92 E" , E1 , "\r\n")
+			fout:write("G1 F" , R_SPEED , " E" , current_E , "\r\n")
+			retracted = true
+		else
+			if debug == true then fout:write("; RETRACT TOOL " .. current_Tool .. " , " .. tool_Retract .. "mm's \r\n") end
+			fout:write("G1 F" , R_SPEED , " E-" , tool_Retract , "\r\n")
+			retracted = true
+		end
 	end
 end
 
 function un_Retract()
-	if ABSOLUTE_E == true then
-		local E = current_E - tool_Retract
-		fout:write("G92 E" , E , "\r\n")
-		fout:write("G1 F" , R_SPEED , " E" , current_E , "\r\n")
-	else
-		fout:write("G1 F" , R_SPEED , " E" , tool_Retract , "\r\n")
+	if retracted == true then -- Prevents double un-retractions
+		if ABSOLUTE_E == true then
+			local E1 = current_E - tool_Retract
+			if debug == true then fout:write("; UN-RETRACT TOOL " .. current_Tool .. " , " .. Get_Retract[current_Tool] .. "mm's \r\n") end
+			fout:write("G92 E" , E1 , "\r\n")
+			fout:write("G1 F" , R_SPEED , " E" , current_E , "\r\n")
+			retracted = false
+		else
+			local new_Retract = tool_Retract - tool_Retract
+			if debug == true then fout:write("; UN-RETRACT TOOL " .. current_Tool .. " , " .. Get_Retract[current_Tool] .. "mm's \r\n") end
+			fout:write("G1 F" , R_SPEED , " E" , tool_Retract , "\r\n")
+			retracted = false
+		end
+	elseif ABSOLUTE_E == true then
+		fout:write("G92 E" , current_E , "\r\n")
 	end
 end
 
@@ -257,7 +287,7 @@ function cool()
 end
 
 function heat(temp)
-	if INTERFACE_TEMP > 0 then
+	if temp > 0 then
 		fout:write(TEMP_CODE , " S" , temp , "\r\n")
 	end
 end
@@ -267,12 +297,12 @@ function line_Out(line)
 end
 
 function go_To_PPL()
-	fout:write(";\r\n;Go to prime pillar location \r\n")
+	if debug == true then fout:write(";\r\n;Go to prime pillar location \r\n") end
 	travel(last_PPL_X,last_PPL_Y)
 end
 
 function go_To_Last()
-	fout:write(";\r\n;Go to last print location \r\n")
+	if debug == true then fout:write(";\r\n;Go to last print location \r\n") end
 	travel(last_X,last_Y)
 end
 
@@ -347,7 +377,7 @@ end
 
 function draw_R_Skirt()
 
-	fout:write(";\r\n;Pillar raft skirt \r\n")
+	if debug == true then fout:write(";\r\n;Pillar raft skirt \r\n") end
 	ABS_E = current_E
 	local overlap = EXTRUSION_WIDTH*0.5
 	local x_min = R_Min_X-overlap
@@ -366,7 +396,7 @@ end
 
 function draw_Raft()
 
-	fout:write(";\r\n;Prime pillar raft \r\n")
+	if debug == true then fout:write(";\r\n;Prime pillar raft \r\n") end
 	un_Retract()
 	set_Flow(RAFT_GAIN)
 	draw_R_Skirt()
@@ -386,23 +416,21 @@ function draw_Raft()
 			draw_Line(Get_RP_X[i+1],Get_RP_Y[i+1])
 		end
 	end
-	
-	if ABSOLUTE_E == true then
-		fout:write("G92 E" , current_E , "\r\n")
-	end
 	set_Flow(100)
 	retract()
 end
 
 function select_Tool(tool)
+	last_Tool = current_Tool
 	tool_X_offset = Get_X_Offset[tool]
 	tool_Y_offset = Get_Y_Offset[tool]
 	tool_Retract = Get_Retract[tool]
 	tool_Area = Get_F_Area[tool]
 	tool_Temp = Get_Temp[tool]
 	tool_Flow = Get_Flow[tool]
-	fout:write(";\r\n;Set tool \r\n")
+	if debug == true then fout:write(";\r\n;Set tool \r\n") end
 	fout:write("T" .. tool , "\r\n")
+	current_Tool = tool
 end
 
 function set_Flow()
@@ -418,7 +446,7 @@ function tool_Change()
 		last_PPL_X = new_X_1
 		last_PPL_Y = new_Y_1
 		if Layer ~= last_Layer and Layer > raft_start and Layer <= RAFT_THICKNESS then
-			if last_Raft == false then
+			if last_Raft ~= true then
 				if Layer == raft_start+1 then
 					fout:write("G1 F" .. T_SPEED .. " Z" .. FIRST_L_HEIGHT .. "\r\n")
 				end
@@ -426,7 +454,7 @@ function tool_Change()
 				draw_Raft()
 				last_Raft = true
 			end
-		elseif Layer > first_pillar then
+		elseif Layer > RAFT_THICKNESS then
 			travel(PPL_X,PPL_Y)
 			draw_Pillar()
 		end
@@ -443,7 +471,7 @@ end
 
 function draw_Pillar()
 
-	if Layer > first_pillar then
+	if Layer > RAFT_THICKNESS then
 		if current_Z == last_Z then
 			Z_Count = Z_Count+1
 		else
@@ -462,7 +490,7 @@ function draw_Pillar()
 			Get_PPP_Y[i] = (P_SIZE_Y*(i*0.125))-P_Offset
 		end
 		
-		fout:write(";\r\n;Prime pillar \r\n")
+		if debug == true then fout:write(";\r\n;Prime pillar \r\n") end
 		un_Retract()
 		ABS_E = current_E
 		draw_Line(PPL_X+Get_PPP_X[1],PPL_Y+Get_PPP_Y[0])
@@ -483,9 +511,6 @@ function draw_Pillar()
 		draw_Line(PPL_X-Get_PPP_X[4],PPL_Y-Get_PPP_Y[4])
 		draw_Line(PPL_X+Get_PPP_X[4],PPL_Y-Get_PPP_Y[4])
 		draw_Line(PPL_X+Get_PPP_X[4],PPL_Y-Get_PPP_Y[3]-P_Offset)
-		if ABSOLUTE_E == true then
-			fout:write("G92 E" , current_E , "\r\n")
-		end
 		retract()
 		fout:write("G0 F" , T_SPEED , " X" , PPL_X , " Y" , PPL_Y , "\r\n")
 		last_Z = current_Z
@@ -506,12 +531,18 @@ function E_Length(L) -- Length
 end
 
 function force_Pillar(line)
-	fout:write(";\r\n; Force prime pillar.\r\n")
+	if debug == true then fout:write(";\r\n; Force prime pillar.\r\n") end
 	retract()
 	go_To_PPL()
 	tool_Change()
-	un_Retract()
-	line_Out(line)
+	if slicer_Retracted == false then
+		un_Retract()
+	elseif ABSOLUTE_E == true then
+		fout:write("G92 E" .. current_E .. "\r\n")
+	end
+	if not comment and REMOVE_COMMENTS == false then
+		line_Out(line)
+	end
 end
 
 function raft(line)
@@ -532,22 +563,29 @@ function raft(line)
 end
 
 function insert_Block(line, tool, section)
-	fout:write(";\r\n; Change tool for " .. section .. "\r\n")
+	if debug == true then fout:write(";\r\n; Change tool for " .. section .. "\r\n") end
 	retract()
 	go_To_PPL()
 	cool()
 	select_Tool(tool)
 	heat(Get_Temp[section])
 	tool_Change()
-	un_Retract(T)
-	fout:write("; Set flow rate for " .. section .. "\r\n")
+	if slicer_Retracted == false then
+		un_Retract()
+	elseif ABSOLUTE_E == true then
+		fout:write("G92 E" .. current_E .. "\r\n")
+	end
+	if debug == true then fout:write("; Set flow rate for " .. section .. "\r\n") end
 	set_Flow()
-	last_Tool = tool
-	line_Out(line)
+	if not comment and REMOVE_COMMENTS == false then
+		line_Out(line)
+	end
 end
 
 -- read lines
 for line in fin:lines() do
+	
+	skip_Line = false
 	
 	local abs = string.match(line, "M82")
 	local rel = string.match(line, "M83")
@@ -563,10 +601,40 @@ for line in fin:lines() do
 		raft_start = 1
 		RAFT_THICKNESS = RAFT_THICKNESS+1
 		PILLAR_ROOF = PILLAR_ROOF+1
-		first_pillar = RAFT_THICKNESS
 	elseif kiss then
 		raft_start = 1
-		first_pillar = RAFT_THICKNESS
+		retracted = true
+		slicer_Retracted = true
+		
+	end
+	
+	-- Skip tool changes inserted by the slicer
+	local t0 = string.match(line, "T0")
+	local t1 = string.match(line, "T1")
+	local t2 = string.match(line, "T2")
+	local t3 = string.match(line, "T3")
+	if t0 or t1 or t2 or t3 then
+		skip_Line = true
+	end
+	
+	-- Find M92 set E steps and ignore E steps per mm
+	local m92 = line:match("M92+")
+	
+	-- Identify comment lines
+	local comment = line:match( ";")
+	if comment and REMOVE_COMMENTS == true then
+		skip_Line = true
+	end
+	
+	local g92_E0 = string.match(line, "G92 E0")
+	if g92_E0 then
+		current_E = 0
+		last_E = 0
+	end
+	
+	local layer = string.match(line, ";LAYER:") or string.match(line, "; BEGIN_LAYER")
+	if layer then
+		Layer = Layer + 1
 	end
 	
 	-- Record X position
@@ -587,22 +655,58 @@ for line in fin:lines() do
 		current_Z = string.match(Z, "%d+%.%d+")
 	end
 	
-	local layer = string.match(line, ";LAYER:") or string.match(line, "; BEGIN_LAYER")
-	if layer then
-		Layer = Layer + 1
+	-- Record E value
+	local E = string.match(line, "E%d+%.%d+")
+	if E and not m92 then
+		-- Store the last E value for the next time through
+		last_E = current_E
+		current_E = string.match(E, "%d+%.%d+")
 	end
-	
-	-- Record E value for ABSOLUTE_E
-	if  ABSOLUTE_E then
-		local E = string.match(line, "E%d+%.%d+")
-		if E then
-			current_E = string.match(E, "%d+%.%d+")
+				
+	local line_start = string.match(line, ".-E")
+
+	-- ABSOLUTE retraction and un-retraction
+	if ABSOLUTE_E == true then
+		local E_diff = (current_E - last_E)
+		 -- RETRACT
+		if E_diff < 0 and retracted == false then
+			local E = (last_E - tool_Retract)
+			local new_E = (math.floor((E*100000)+0.25))*0.00001 -- Round up to the 6th digit after the decimal
+			if debug == true then fout:write("; REPLACE RETRACT , TOOL " .. current_Tool .. " , " .. tool_Retract .. "mm's \r\n") end
+			fout:write(line_start .. new_E .. "\r\n")
+			fout:write("G92 E" .. current_E .. "\r\n")
+			retracted = true
+			slicer_Retracted = true
+			skip_Line = true
+		 -- UN-RETRACT
+		elseif E_diff > (RETRACT_DISTANCE-0.0001) and E_diff < (RETRACT_DISTANCE+0.0001) and retracted == true then -- the margin is a work around for it missing some un-retracts when using ==
+			local E = (current_E - tool_Retract)
+			local new_E = (math.floor((E*100000)+0.25))*0.00001 -- Round up to the 6th digit after the decimal
+			if debug == true then fout:write("; REPLACE UN-RETRACT , TOOL " .. current_Tool .. " , " .. tool_Retract .. "mm's \r\n") end
+			fout:write("G92 E" .. new_E .. "\r\n")
+			retracted = false
+			slicer_Retracted = false
 		end
 	end
 	
-	local g92_E0 = string.match(line, "G92 E0")
-	if g92_E0 then
-		current_E = 0
+	-- RELATIVE retraction and un-retraction
+	if ABSOLUTE_E ~= true then
+		local retract_E = string.match(line, "-%d+%.%d+")
+		 -- RETRACT
+		if retract_E then
+			if debug == true then fout:write("; REPLACE RETRACT , TOOL " .. current_Tool .. " , " .. tool_Retract .. "mm's \r\n") end
+			fout:write(line_start .. "-" .. tool_Retract .. "\r\n")
+			retracted = true
+			slicer_Retracted = true
+			skip_Line = true
+		 -- UN-RETRACT
+		elseif current_E+0 == RETRACT_DISTANCE and retracted == true then -- the +0 is a work around required to find any and all un-retracts for some reason
+			if debug == true then fout:write("; REPLACE UN-RETRACT , TOOL " .. current_Tool .. " , " .. tool_Retract .. "mm's \r\n") end
+			fout:write(line_start .. tool_Retract .. "\r\n")
+			skip_Line = true
+			retracted = false
+			slicer_Retracted = false
+		end
 	end
 	
 	local inter = line:match( "; 'Support Interface',") -- Find start of support interface
@@ -616,35 +720,35 @@ for line in fin:lines() do
         if Layer ~= last_Layer and force_Tower and PRIME_PILLAR and Layer > raft_start then
                 force_Pillar(line)
 	
-	-- Set new tool for support interface (Kisslicer)
-	elseif inter and last_Tool ~= INTERFACE_TOOL then
+	-- Set new tool for support interface
+	elseif inter and current_Tool ~= INTERFACE_TOOL then
 		insert_Block(line,INTERFACE_TOOL,"interface")
 
-	-- Set tool for support (Kisslicer)
-	elseif sup and last_Tool ~= SUPPORT_TOOL then
+	-- Set tool for support
+	elseif sup and current_Tool ~= SUPPORT_TOOL then
 		insert_Block(line,SUPPORT_TOOL,"support")
 
-	-- Set tool for perimeter (Kisslicer)
-	elseif perim and last_Tool ~= PERIMETER_TOOL then
+	-- Set tool for perimeter
+	elseif perim and current_Tool ~= PERIMETER_TOOL then
 		insert_Block(line,PERIMETER_TOOL,"perimeter")
 
-	-- Set tool for loops (Kisslicer)
-	elseif loop and last_Tool ~= LOOP_TOOL then
+	-- Set tool for loops
+	elseif loop and current_Tool ~= LOOP_TOOL then
 		insert_Block(line,LOOP_TOOL,"loop")
 
-	-- Set tool for solid infill (Kisslicer)
-	elseif solid and last_Tool ~= SOLID_TOOL then
+	-- Set tool for solid infill
+	elseif solid and current_Tool ~= SOLID_TOOL then
 		insert_Block(line,SOLID_TOOL,"solid")
 
-	-- Set tool for sparse infill (Kisslicer)
-	elseif sparse and last_Tool ~= SPARSE_TOOL then
+	-- Set tool for sparse infill
+	elseif sparse and current_Tool ~= SPARSE_TOOL then
 		insert_Block(line,SPARSE_TOOL,"infill")
 	
-	else
+	elseif skip_Line ~= true then
 	        fout:write(line .. "\n" )
 	end
 	
-	if Layer ~= last_Layer and force_Tower == false then
+	if Layer ~= last_Layer and force_Tower ~= true then
 		force_Tower = true
 	end
 	

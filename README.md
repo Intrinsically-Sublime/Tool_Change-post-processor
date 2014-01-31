@@ -3,6 +3,10 @@ Tool-Change-post-processor
 
 Works with KISSlicer and Cura gcode files with the comments enabled.
 
+Relative retractions need to have at least one digit after the decimal place even if it is a zero
+
+Must have M82 in start code for Absolute E or M83 for Relative E
+
 Post processor to change the tool used for different extrusion types in RepRap gcode
 
 It looks for the comments stating when each extrusion type starts (perimeter, loops, solid infill, sparse infill, 
